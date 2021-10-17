@@ -1,0 +1,415 @@
+.main {
+  position: fixed;
+  width: calc(100% - 192px);
+  // height: calc(100vh - 300px);
+  // top: 300px;
+  top: 60px;
+  left: 192px;
+  z-index: 99;
+  background: #fff;
+  .header {
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    .item {
+      display: flex;
+      align-items: center;
+      flex-shrink: 0;
+      .content {
+        .type {
+          padding: 2px 6px;
+          border: 1px solid #999;
+          border-radius: 6px;
+          margin-right: 4px;
+        }
+      }
+    }
+    .item + .item {
+      margin-left: 40px;
+    }
+  }
+  .table {
+    padding: 0 20px;
+    .head {
+      height: 40px;
+      background: #fafafa;
+      margin-bottom: 10px;
+      .item {
+        padding: 0 20px;
+        height: 40px;
+        line-height: 40px;
+      }
+    }
+    .body {
+      width: 100%;
+      height: calc(100vh - 190px);
+      overflow: auto;
+      .line {
+        margin-top: 30px;
+        width: 100%;
+        border-bottom: 1px solid #eee;
+        .statusBar {
+          padding: 0 20px;
+          height: 60px;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          .left {
+            display: flex;
+            align-items: center;
+            .orderId {
+              width: 300px;
+            }
+            .ali {
+              width: 200px;
+              color: #318adc;
+              cursor: pointer;
+              display: flex;
+              align-items: center;
+              .icon {
+                margin-right: 6px;
+                display: block;
+                width: 20px;
+                height: 20px;
+                background: url("./assets/img/ali.png") 0 0 no-repeat;
+                background-size: 100%;
+              }
+            }
+            .time {
+              width: 200px;
+            }
+            .merge {
+              width: 90px;
+              height: 20px;
+              line-height: 20px;
+              border-radius: 10px;
+              color: #fff;
+              background: #cc3366;
+              text-align: center;
+            }
+            .refund {
+              width: 90px;
+              height: 20px;
+              line-height: 20px;
+              border-radius: 10px;
+              color: #fff;
+              background: red;
+              text-align: center;
+              margin-left: 20px;
+            }
+          }
+          .right {
+            display: flex;
+            .flagGrey {
+              cursor: pointer;
+              width: 14px;
+              height: 14px;
+              background: url("./assets/img/flag_grey.png") 0 0 no-repeat;
+              background-size: 100%;
+            }
+            .flagYellow {
+              cursor: pointer;
+              width: 14px;
+              height: 14px;
+              background: url("./assets/img/flag_yellow.png") 0 0 no-repeat;
+              background-size: 100%;
+            }
+            .flagRed {
+              cursor: pointer;
+              width: 14px;
+              height: 14px;
+              background: url("./assets/img/flag_red.png") 0 0 no-repeat;
+              background-size: 100%;
+            }
+            .flagBlue {
+              cursor: pointer;
+              width: 14px;
+              height: 14px;
+              background: url("./assets/img/flag_blue.png") 0 0 no-repeat;
+              background-size: 100%;
+            }
+            .flagGreen {
+              cursor: pointer;
+              width: 14px;
+              height: 14px;
+              background: url("./assets/img/flag_green.png") 0 0 no-repeat;
+              background-size: 100%;
+            }
+            .flagPurple {
+              cursor: pointer;
+              width: 14px;
+              height: 14px;
+              background: url("./assets/img/flag_purple.png") 0 0 no-repeat;
+              background-size: 100%;
+            }
+            .remark {
+              display: block;
+              margin-left: 24px;
+              cursor: pointer;
+              width: 14px;
+              height: 14px;
+              background: url("./assets/img/remark.png") 0 0 no-repeat;
+              background-size: 100%;
+            }
+          }
+        }
+        .statusGrey {
+          background: rgba(150, 160, 173, 0.2);
+        }
+        .statusRed {
+          background: rgba(249, 84, 93, 0.2);
+        }
+        .statusYellow {
+          background: rgba(255, 171, 0, 0.2);
+        }
+        .statusGreen {
+          background: #f6ffed;
+        }
+        .statusBlue {
+          background: rgba(51, 97, 216, 0.1);
+        }
+        .statusPurple {
+          background: rgba(101, 84, 192, 0.1);
+        }
+        .trades {
+          padding-bottom: 20px;
+          .subOrderId {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+            height: 26px;
+            line-height: 26px;
+            padding: 0px 20px;
+            .left {
+              display: flex;
+              align-items: center;
+            }
+            .right {
+              display: flex;
+              align-items: center;
+              .flagGrey {
+                cursor: pointer;
+                width: 14px;
+                height: 14px;
+                background: url("./assets/img/flag_grey.png") 0 0 no-repeat;
+                background-size: 100%;
+              }
+              .flagYellow {
+                cursor: pointer;
+                width: 14px;
+                height: 14px;
+                background: url("./assets/img/flag_yellow.png") 0 0 no-repeat;
+                background-size: 100%;
+              }
+              .flagRed {
+                cursor: pointer;
+                width: 14px;
+                height: 14px;
+                background: url("./assets/img/flag_red.png") 0 0 no-repeat;
+                background-size: 100%;
+              }
+              .flagBlue {
+                cursor: pointer;
+                width: 14px;
+                height: 14px;
+                background: url("./assets/img/flag_blue.png") 0 0 no-repeat;
+                background-size: 100%;
+              }
+              .flagGreen {
+                cursor: pointer;
+                width: 14px;
+                height: 14px;
+                background: url("./assets/img/flag_green.png") 0 0 no-repeat;
+                background-size: 100%;
+              }
+              .flagPurple {
+                cursor: pointer;
+                width: 14px;
+                height: 14px;
+                background: url("./assets/img/flag_purple.png") 0 0 no-repeat;
+                background-size: 100%;
+              }
+              .remark {
+                display: block;
+                margin-left: 24px;
+                cursor: pointer;
+                width: 14px;
+                height: 14px;
+                background: url("./assets/img/remark.png") 0 0 no-repeat;
+                background-size: 100%;
+              }
+            }
+          }
+          .orders {
+            .shop {
+              display: flex;
+              margin-top: 20px;
+              padding: 0 20px;
+              .pic {
+                flex-shrink: 0;
+                width: 76px;
+                height: 76px;
+                img {
+                  width: 100%;
+                  height: 100%;
+                }
+              }
+              .right {
+                margin-left: 20px;
+                font-size: 12px;
+                display: flex;
+                flex-direction: column;
+                justify-content: space-between;
+                .title {
+                  color: #3e3e3e;
+                }
+                .orderRefund {
+                  display: inline-block;
+                  padding: 2px 6px;
+                  color: #fff;
+                  background: red;
+                  font-size: 12px;
+                  border-radius: 4px;
+                }
+                .desc {
+                  color: #999;
+                }
+                .sku {
+                  padding: 0px 10px;
+                  display: inline-block;
+                  color: #999;
+                  background: rgba(0, 0, 0, 0.04);
+                  border-radius: 10px;
+                  border: 1px solid rgba(0, 0, 0, 0.15);
+                }
+              }
+            }
+          }
+          .amount {
+            margin-top: 20px;
+            height: 76px;
+            line-height: 76px;
+            padding: 0 24px;
+          }
+          .address {
+            padding: 0 24px;
+          }
+          .operation {
+            margin-top: 20px;
+            padding: 0 28px;
+            .tipsYellow {
+              margin-top: 10px;
+              display: flex;
+              flex-direction: column;
+              .attention {
+                color: #fff;
+                font-size: 12px;
+                padding: 2px 6px;
+                background: #ffab00;
+                text-align: center;
+                border-radius: 4px 4px 0 0;
+              }
+              .memo {
+                font-size: 12px;
+                padding: 10px;
+                border: 2px solid #ffab00;
+                border-radius: 0 0 4px 4px;
+              }
+            }
+            .tipsRed {
+              margin-top: 10px;
+              display: flex;
+              flex-direction: column;
+              .attention {
+                color: #fff;
+                font-size: 12px;
+                padding: 2px 6px;
+                background: #f9545d;
+                text-align: center;
+                border-radius: 4px 4px 0 0;
+              }
+              .memo {
+                font-size: 12px;
+                padding: 10px;
+                border: 2px solid #f9545d;
+                border-radius: 0 0 4px 4px;
+              }
+            }
+            .tipsGreen {
+              margin-top: 10px;
+              display: flex;
+              flex-direction: column;
+              .attention {
+                color: #fff;
+                font-size: 12px;
+                padding: 2px 6px;
+                background: #2c7446;
+                text-align: center;
+                border-radius: 4px 4px 0 0;
+              }
+              .memo {
+                font-size: 12px;
+                padding: 10px;
+                border: 2px solid #2c7446;
+                border-radius: 0 0 4px 4px;
+              }
+            }
+          }
+        }
+        .success {
+          background: rgba(38, 255, 31, 0.4);
+        }
+        .message {
+          background: #339900;
+          color: #fff;
+          padding: 10px 0;
+          text-align: center;
+        }
+        .orderError {
+          margin-top: 4px;
+          border-top: 1px solid #797979;
+          border-bottom: 1px solid #797979;
+          padding: 6px 0;
+          color: #fff;
+          text-align: center;
+          background: #cc0000;
+        }
+        .skuError {
+          margin-top: 4px;
+          border-top: 1px solid #797979;
+          border-bottom: 1px solid #797979;
+          padding: 6px 0;
+          color: #fff;
+          text-align: center;
+          background: #cc0000;
+        }
+      }
+    }
+  }
+}
+.progress {
+  width: 100%;
+  position: fixed;
+  z-index: 999999;
+  bottom: 0;
+  left: 0;
+}
+.loadBtn {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 99999;
+}
+.el-dialog__body {
+  padding: 10px 20px 30px 20px;
+}
+.el-dialog__title {
+  font-size: 20px;
+  font-weight: bold;
+}
+.el-message-box__message {
+  p {
+    color: #606266;
+  }
+}
