@@ -92,6 +92,8 @@ export default {
             this.onCheckName(this.data, data, token);
           } else {
             sessionStorage.removeItem("token");
+            sessionStorage.removeItem("pagecode");
+            sessionStorage.removeItem("pati");
             this.$root.token = "";
             this.$message.error(msg);
             this.changeImgSrc();
@@ -112,6 +114,8 @@ export default {
       if (typeName !== "拼多多") {
         this.$message.error("店铺类型不正确");
         sessionStorage.removeItem("token");
+        sessionStorage.removeItem("pagecode");
+        sessionStorage.removeItem("pati");
         this.$root.token = "";
         this.changeImgSrc();
         return;
@@ -125,6 +129,8 @@ export default {
       } else {
         this.$message.error("店铺信息不符");
         sessionStorage.removeItem("token");
+        sessionStorage.removeItem("pagecode");
+        sessionStorage.removeItem("pati");
         this.$root.token = "";
         this.changeImgSrc();
       }

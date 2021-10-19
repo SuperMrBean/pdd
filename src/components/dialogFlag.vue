@@ -82,22 +82,26 @@ export default {
     onConfirm() {
       const { tid = "" } = this.data || {};
       const data = {
-        apiMethodName: "taobao.trade.memo.update",
-        textParams: {
-          tid,
-          memo: this.sellerMemo,
-          flag: this.sellerFlag,
-          reset: false,
-        },
-        shopId: this.shopId,
+        flag: this.sellerFlag,
+        tradeMemoList: [
+          {
+            tid,
+            memo: this.sellerMemo,
+          },
+        ],
       };
       this.loading = true;
       $.ajax({
-        url: "//zft.topchitu.com/api/taobao",
+        url: "//ctdd.topchitu.com/api/trade-memo/bulk-save",
         type: "POST",
         contentType: "application/json; charset=utf-8",
         dataType: "json",
         data: JSON.stringify(data),
+        headers: {
+          "x-pdd-pagecode": this.$root.pagecode,
+          "x-pdd-pati": this.$root.pati,
+          shopid: this.shopId,
+        },
       })
         .then(() => {
           this.loading = false;
@@ -106,9 +110,10 @@ export default {
           this.isVisible = false;
         })
         .catch((error) => {
+          console.log(error);
           const { responseJSON = {} } = error || {};
-          const { subMsg = "" } = responseJSON || {};
-          this.$message.error(subMsg);
+          const { msg = "" } = responseJSON || {};
+          this.$message.error(msg);
           this.loading = false;
         });
     },

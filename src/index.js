@@ -14,6 +14,9 @@ const vm = new Vue({
   data: function() {
     return {
       token: sessionStorage.getItem("token"), // 全局token
+      shopId: sessionStorage.getItem("shopId"),
+      pagecode: sessionStorage.getItem("pagecode"),
+      pati: sessionStorage.getItem("pati"),
     };
   },
 });
