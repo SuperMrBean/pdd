@@ -458,54 +458,61 @@ export default {
   },
   methods: {
     // 获取明文信息
-    onGetItemDetail(listData) {
-      const { defaultShopId = null } = this.userInfo || {};
-      const { trades = [], receiverInfo = {} } = listData || {};
-      const tidList = trades.map((item) => item.tid);
-      const {
-        receiverName = "",
-        receiverAddress = "",
-        receiverMobile = "",
-        oaid = "",
-      } = receiverInfo || {};
-      const data = {
-        encryptedAddressList: [
-          {
-            objectId: "0",
-            tidList: tidList,
-            receiverName,
-            receiverMobile,
-            receiverAddress,
-            oaid,
+    async onGetItemDetail(listData) {
+      try {
+        const { trades = [], receiverInfo = {} } = listData || {};
+        const { tid = "" } = trades[0] || {};
+        const { receiverMobileEncrypt = "", receiverMobile = "" } =
+          receiverInfo || {};
+        const data = {
+          decrypt_report_type: 0,
+          decrypt_set: {},
+          order_sn: tid,
+        };
+        const nameResponse = await $.ajax({
+          url: "//ctdd.topchitu.com/pdd/control/decrypt/v1/receiverName",
+          type: "POST",
+          contentType: "application/json; charset=utf-8",
+          dataType: "json",
+          data: JSON.stringify(data),
+          headers: {
+            "x-pdd-pagecode": this.$root.pagecode,
+            "x-pdd-pati": this.$root.pati,
+            shopid: this.$root.shopId,
           },
-        ],
-        decryptAuthType: "SHOP",
-        targetId: defaultShopId,
-      };
-      $.ajax({
-        url: "//zft.topchitu.com/api/security/batch-decrypt-address",
-        type: "POST",
-        contentType: "application/json; charset=utf-8",
-        dataType: "json",
-        data: JSON.stringify(data),
-      })
-        .then((response) => {
-          const {
-            receiverName = "",
-            receiverMobile = "",
-            receiverAddress = "",
-          } = response[0];
-          if (receiverName && receiverMobile && receiverAddress) {
-            this.order.phoneNumber = receiverMobile;
-            this.order.receiver = receiverName;
-            this.order.address = receiverAddress;
-          } else {
-            this.$message.error("获取明文信息失败");
-          }
-        })
-        .catch((error) => {
-          console.log(error);
         });
+        const addressResponse = await $.ajax({
+          url: "//ctdd.topchitu.com/pdd/control/decrypt/v1/receiverAddress",
+          type: "POST",
+          contentType: "application/json; charset=utf-8",
+          dataType: "json",
+          data: JSON.stringify(data),
+          headers: {
+            "x-pdd-pagecode": this.$root.pagecode,
+            "x-pdd-pati": this.$root.pati,
+            shopid: this.$root.shopId,
+          },
+        });
+        const { order_info: nameInfo = {} } = nameResponse || {};
+        const { order_info: addressInfo = {} } = addressResponse || {};
+        const { receiver_name: receiverName = "" } = nameInfo || {};
+        const { receiver_address: receiverAddress = "" } = addressInfo || {};
+        if (receiverName && receiverAddress) {
+          console.log();
+          this.order.phoneNumber = receiverMobile;
+          this.order.receiver = receiverName.replace(/\[(.*?)\]/, "");
+          this.order.address = receiverAddress.replace(/\[(.*?)\]/, "");
+        } else {
+          this.pushLoading = false;
+          this.$message.error("获取明文信息失败");
+        }
+      } catch (error) {
+        console.log();
+        const { responseJSON = {} } = error || {};
+        const { msg = "" } = responseJSON || {};
+        this.$message.error(msg);
+        this.pushLoading = false;
+      }
     },
     // 获取省市区数据
     onGetProvinceList() {
@@ -980,7 +987,7 @@ export default {
         buyerNick = "",
         minPayTime = "",
       } = _data || {};
-      const { tid = "", oaid = "" } = trades[0];
+      const { tid = "" } = trades[0];
       const {
         receiverState = "",
         receiverCity = "",
@@ -993,7 +1000,7 @@ export default {
       this.order.city = receiverCity;
       this.order.district = receiverDistrict;
       this.order.street = receiverTown;
-      this.order.buyerUid = oaid.substr(0, 10);
+      this.order.buyerUid = new Date().getTime();
       this.order.orderTime = minPayTime;
       this.order.cpCode = this.logistics[0].cpCode;
     },

@@ -571,18 +571,25 @@ export default {
           const { url = "" } = config || {};
           // 拦截列表信息
           if (url.indexOf("/trade/details") > -1) {
-            const content =
-              JSON.parse(data).map((item) => JSON.parse(item)) || [];
-            console.log(JSON.parse(JSON.stringify(content)));
+            // 过滤掉完成和待确认订单
+            let content =
+              JSON.parse(data)
+                .map((item) => JSON.parse(item))
+                .filter(
+                  (item) =>
+                    item.status !== "WAIT_BUYER_CONFIRM_GOODS" &&
+                    item.status !== "TRADE_FINISHED"
+                ) || [];
+
+            console.log(content);
             // 对数据进行支付之间排序
             content.sort((a, b) => {
               const { pay_time: timeA = "" } = a || {};
               const { pay_time: timeB = "" } = b || {};
               return timeA < timeB ? -1 : 1;
             });
-            console.log(content);
-            // 对数据进行格式化
-            const list = content.map((item) => {
+            // 对数据进行格式化并合并订单
+            const list = content.reduce((acc, cur) => {
               const {
                 buyer_nick = "",
                 buyer_message = "",
@@ -599,74 +606,117 @@ export default {
                 tid = "",
                 orders = [],
                 status = "",
-              } = item || {};
-              return {
-                buyerNick: buyer_nick,
-                receiverInfo: {
-                  receiverAddress: receiver_address_mask,
-                  receiverCity: receiver_city,
-                  receiverCountry: receiver_country,
-                  receiverDistrict: receiver_district,
-                  receiverMobile: receiver_mobile_mask,
-                  receiverName: receiver_name_mask,
-                  receiverState: receiver_state,
-                  receiverTown: receiver_town,
-                  receiverMobileEncrypt: receiver_mobile_encrypt,
-                },
-                trades: [
-                  {
-                    tid,
-                    buyerNick: buyer_nick,
-                    buyerMessage: buyer_message,
-                    sellerMemo: seller_memo,
-                    sellerFlag: this.flagObj[tid],
-                    status,
-                    orders: orders.map((order) => {
-                      const {
-                        outer_iid = "",
-                        outer_sku_id = "",
-                        pic_path = "",
-                        refund_status = "",
-                        sku_id = "",
-                        sku_properties_name = "",
-                      } = order || {};
-                      return {
-                        ...order,
-                        outerIid: outer_iid,
-                        outerSkuId: outer_sku_id,
-                        picPath: pic_path,
-                        refundStatus: refund_status,
-                        skuId: sku_id,
-                        skuPropertiesName: sku_properties_name,
-                      };
-                    }),
+              } = cur || {};
+              const listIndex = acc.findIndex((listItem) => {
+                const { receiverInfo = {} } = listItem || {};
+                const {
+                  receiverAddress = "",
+                  receiverMobile = "",
+                  receiverName = "",
+                } = receiverInfo || {};
+                return (
+                  receiverAddress === receiver_address_mask &&
+                  receiverMobile === receiver_mobile_mask &&
+                  receiverName === receiver_name_mask
+                );
+              });
+              if (listIndex > -1) {
+                acc[listIndex].trades.push({
+                  tid,
+                  buyerNick: buyer_nick,
+                  buyerMessage: buyer_message,
+                  sellerMemo: seller_memo,
+                  sellerFlag: this.flagObj[tid],
+                  status,
+                  orders: orders.map((order) => {
+                    const {
+                      outer_iid = "",
+                      outer_sku_id = "",
+                      pic_path = "",
+                      refund_status = "",
+                      sku_id = "",
+                      sku_properties_name = "",
+                    } = order || {};
+                    return {
+                      ...order,
+                      outerIid: outer_iid,
+                      outerSkuId: outer_sku_id,
+                      picPath: pic_path,
+                      refundStatus: refund_status,
+                      skuId: sku_id,
+                      skuPropertiesName: sku_properties_name,
+                    };
+                  }),
+                });
+              } else {
+                acc.push({
+                  buyerNick: buyer_nick,
+                  receiverInfo: {
+                    receiverAddress: receiver_address_mask,
+                    receiverCity: receiver_city,
+                    receiverCountry: receiver_country,
+                    receiverDistrict: receiver_district,
+                    receiverMobile: receiver_mobile_mask,
+                    receiverName: receiver_name_mask,
+                    receiverState: receiver_state,
+                    receiverTown: receiver_town,
+                    receiverMobileEncrypt: receiver_mobile_encrypt,
                   },
-                ],
+                  trades: [
+                    {
+                      tid,
+                      buyerNick: buyer_nick,
+                      buyerMessage: buyer_message,
+                      sellerMemo: seller_memo,
+                      sellerFlag: this.flagObj[tid],
+                      status,
+                      orders: orders.map((order) => {
+                        const {
+                          outer_iid = "",
+                          outer_sku_id = "",
+                          pic_path = "",
+                          refund_status = "",
+                          sku_id = "",
+                          sku_properties_name = "",
+                        } = order || {};
+                        return {
+                          ...order,
+                          outerIid: outer_iid,
+                          outerSkuId: outer_sku_id,
+                          picPath: pic_path,
+                          refundStatus: refund_status,
+                          skuId: sku_id,
+                          skuPropertiesName: sku_properties_name,
+                        };
+                      }),
+                    },
+                  ],
+                });
+              }
+              return acc;
+            }, []);
+            this.list = list.map((item) => {
+              // 是否有退款
+              let isRefund = false;
+              const { trades = [] } = item;
+              trades.forEach((trade) => {
+                const { orders = [] } = trade;
+                orders.forEach((order) => {
+                  const { refundStatus = "" } = order;
+                  if (refundStatus === "WAIT_SELLER_AGREE") {
+                    isRefund = true;
+                  }
+                });
+              });
+              return {
+                ...item,
+                isSkuError: false,
+                isPush: false,
+                isRefund,
+                orderErrorList: [],
               };
             });
-            this.list = list;
-            // console.log(this.list);
-            // this.list = content.map((item) => {
-            //   // 是否有退款
-            //   let isRefund = false;
-            //   const { trades = [] } = item;
-            //   trades.forEach((trade) => {
-            //     const { orders = [] } = trade;
-            //     orders.forEach((order) => {
-            //       const { refundStatus = "" } = order;
-            //       if (refundStatus === "WAIT_SELLER_AGREE") {
-            //         isRefund = true;
-            //       }
-            //     });
-            //   });
-            //   return {
-            //     ...item,
-            //     isSkuError: false,
-            //     isPush: false,
-            //     isRefund,
-            //     orderErrorList: [],
-            //   };
-            // });
+            console.log(this.list);
           }
           // 拦截列表旗帜信息
           if (url.indexOf("/trade-print/get-seller-flag-by-tids") > -1) {
@@ -819,7 +869,6 @@ export default {
     },
     // 获取skuList
     onGetSkuList(listData) {
-      console.log(listData);
       const { trades = [] } = listData || {};
       let totalOrders = [];
       trades.forEach((trade) => {
@@ -922,8 +971,10 @@ export default {
     // 获取明文信息
     async onGetItemDetail(listData, skuList) {
       try {
-        const { trades = [] } = listData || {};
-        const { tid = "" } = trades[0];
+        const { trades = [], receiverInfo = {} } = listData || {};
+        const { tid = "" } = trades[0] || {};
+        const { receiverMobileEncrypt = "", receiverMobile = "" } =
+          receiverInfo || {};
         const data = {
           decrypt_report_type: 0,
           decrypt_set: {},
@@ -953,73 +1004,40 @@ export default {
             shopid: this.$root.shopId,
           },
         });
-        console.log(nameResponse);
-        console.log(addressResponse);
-      } catch (error) {}
-
-      // const { defaultShopId = null } = this.userInfo || {};
-      // const { trades = [], receiverInfo = {} } = listData || {};
-      // const tidList = trades.map((item) => item.tid);
-      // const {
-      //   receiverName = "",
-      //   receiverAddress = "",
-      //   receiverMobile = "",
-      //   oaid = "",
-      // } = receiverInfo || {};
-      // const data = {
-      //   encryptedAddressList: [
-      //     {
-      //       objectId: "0",
-      //       tidList: tidList,
-      //       receiverName,
-      //       receiverMobile,
-      //       receiverAddress,
-      //       oaid,
-      //     },
-      //   ],
-      //   decryptAuthType: "SHOP",
-      //   targetId: defaultShopId,
-      // };
-      // $.ajax({
-      //   url: "//zft.topchitu.com/api/security/batch-decrypt-address",
-      //   type: "POST",
-      //   contentType: "application/json; charset=utf-8",
-      //   dataType: "json",
-      //   data: JSON.stringify(data),
-      // })
-      //   .then((response) => {
-      //     const {
-      //       receiverName = "",
-      //       receiverMobile = "",
-      //       receiverAddress = "",
-      //     } = response[0];
-      //     if (receiverName && receiverMobile && receiverAddress) {
-      //       this.onPushOrderJson(
-      //         receiverName,
-      //         receiverMobile,
-      //         receiverAddress,
-      //         listData,
-      //         skuList
-      //       );
-      //     } else {
-      //       this.pushLoading = false;
-      //       this.$message.error("获取明文信息失败");
-      //     }
-      //   })
-      //   .catch((error) => {
-      //     this.pushLoading = false;
-      //     console.log(error);
-      //   });
+        const { order_info: nameInfo = {} } = nameResponse || {};
+        const { order_info: addressInfo = {} } = addressResponse || {};
+        const { receiver_name: receiverName = "" } = nameInfo || {};
+        const { receiver_address: receiverAddress = "" } = addressInfo || {};
+        if (receiverName && receiverAddress) {
+          this.onPushOrderJson(
+            receiverName.replace(/\[(.*?)\]/, ""),
+            receiverMobile,
+            receiverAddress.replace(/\[(.*?)\]/, ""),
+            receiverMobileEncrypt,
+            listData,
+            skuList
+          );
+        } else {
+          this.pushLoading = false;
+          this.$message.error("获取明文信息失败");
+        }
+      } catch (error) {
+        console.log();
+        const { responseJSON = {} } = error || {};
+        const { msg = "" } = responseJSON || {};
+        this.$message.error(msg);
+        this.pushLoading = false;
+      }
     },
     // 推送
-    onPushOrderJson(name, mobile, address, listData, skuList) {
+    onPushOrderJson(name, mobile, address, mobileEncrypt, listData, skuList) {
       const { trades = [] } = listData || {};
       if (trades.length === 0) {
         this.$message.error("推送信息有误");
         return;
       }
       const { cpCode = "" } = this.logistics[0];
-      const { tid = "", buyerNick = "", oaid = "" } = trades[0] || {};
+      const { tid = "", buyerNick = "" } = trades[0] || {};
       const { receiverInfo = {} } = listData || {};
       const {
         receiverCity = "",
@@ -1032,10 +1050,11 @@ export default {
           {
             orderId: tid,
             cpCode,
-            buyerNickname: buyerNick,
-            buyerUid: oaid.substr(0, 10),
+            buyerNickname: buyerNick ? buyerNick : new Date().getTime(),
+            buyerUid: new Date().getTime(),
             receiver: name,
             phoneNumber: mobile,
+            phoneEncrypt: mobileEncrypt,
             province: receiverState,
             city: receiverCity,
             district: receiverDistrict,
@@ -1051,6 +1070,7 @@ export default {
           },
         ],
       };
+      console.log(data);
       $.ajax({
         url: "https://ryanopen.prprp.com/api/order/json",
         type: "POST",
@@ -1079,11 +1099,12 @@ export default {
               listData.orderErrorList = [];
               this.balance = balance;
               const { logisticsNumber = "" } = ok[0];
-              if (this.pushType === "send") {
-                this.onDelivery({ listData, logisticsNumber });
-              } else {
-                this.onSaveRecord({ listData, logisticsNumber });
-              }
+              console.log(logisticsNumber);
+              // if (this.pushType === "send") {
+              //   this.onDelivery({ listData, logisticsNumber });
+              // } else {
+              //   this.onSaveRecord({ listData, logisticsNumber });
+              // }
             }
           } else {
             this.pushLoading = false;
@@ -1092,6 +1113,7 @@ export default {
         })
         .catch((error) => {
           this.pushLoading = false;
+          console.log(error);
           const { responseJSON = {} } = error || {};
           const { msg = "" } = responseJSON || {};
           this.$message.error(msg);
