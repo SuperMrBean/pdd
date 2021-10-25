@@ -17,6 +17,7 @@ const vm = new Vue({
       shopId: sessionStorage.getItem("shopId"),
       pagecode: sessionStorage.getItem("pagecode"),
       pati: sessionStorage.getItem("pati"),
+      templateId: sessionStorage.getItem("templateId"),
     };
   },
 });

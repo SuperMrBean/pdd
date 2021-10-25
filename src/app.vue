@@ -457,8 +457,9 @@
       :userInfo="userInfo"
       :shopInfo="shopInfo"
       :logistics="logistics"
+      :pddLogistics="pddLogistics"
       :pushType="pushType"
-      :defAddress="defAddress"
+      :templateInfo="templateInfo"
       :globalTime="globalTime"
       @lock="onLockPush"
       @refresh="onChangeBalance"
@@ -509,8 +510,10 @@ export default {
       show: false,
       userInfo: {},
       shopInfo: {},
+      templateInfo: {},
       balance: null,
       logistics: [],
+      pddLogistics: [],
       list: [],
       flagObj: {},
       addresses: [],
@@ -558,6 +561,8 @@ export default {
           if (url.indexOf("/user/login-user") > -1) {
             sessionStorage.setItem("pagecode", headers["x-pdd-pagecode"]);
             sessionStorage.setItem("pati", headers["x-pdd-pati"]);
+            this.$root.pagecode = headers["x-pdd-pagecode"];
+            this.$root.pati = headers["x-pdd-pati"];
           }
           handler.next(config);
         },
@@ -569,6 +574,19 @@ export default {
         onResponse: (response, handler) => {
           const { config = {}, response: data = {} } = response || {};
           const { url = "" } = config || {};
+          // 拦截userConfig信息
+          if (url.indexOf("/api/user-config/list") > -1) {
+            const userConfig = JSON.parse(data) || {};
+            const { printDefaultWaybillTemplateId = "" } = userConfig;
+            this.$root.templateId = Number(printDefaultWaybillTemplateId);
+          }
+          // 拦截模板信息
+          if (url.indexOf("/api/waybill-template/find-user-template") > -1) {
+            const templateList = JSON.parse(data) || [];
+            this.templateInfo = templateList.find(
+              (list) => list.id === this.$root.templateId
+            );
+          }
           // 拦截列表信息
           if (url.indexOf("/trade/details") > -1) {
             // 过滤掉完成和待确认订单
@@ -734,6 +752,38 @@ export default {
             const { defaultShopId = null } = userInfo;
             this.userInfo = userInfo;
             this.$root.shopId = defaultShopId;
+            const params = {
+              apiMethodName: "pdd.refund.address.list.get",
+              shopId: defaultShopId,
+            };
+            // 获取发货时需要的refund_address_id
+            $.ajax({
+              url: "//ctdd.topchitu.com/api/pdd",
+              type: "POST",
+              contentType: "application/json; charset=utf-8",
+              dataType: "json",
+              data: JSON.stringify(params),
+              headers: {
+                "x-pdd-pagecode": this.$root.pagecode,
+                "x-pdd-pati": this.$root.pati,
+              },
+            })
+              .then((response) => {
+                const { refund_address_list_get_response = {} } =
+                  response || {};
+                const { refund_address_list = [] } =
+                  refund_address_list_get_response || {};
+                const {
+                  refund_address_id: refundAddressId = "",
+                } = refund_address_list[0];
+                sessionStorage.setItem("refundAddressId", refundAddressId);
+                this.$root.refundAddressId = refundAddressId;
+              })
+              .catch((error) => {
+                const { responseJSON = {} } = error || {};
+                const { msg = "" } = responseJSON || {};
+                this.$message.error(msg);
+              });
           }
           // 拦截用户信息
           if (url.indexOf("/external-authority/find-by-shop-id") > -1) {
@@ -743,27 +793,10 @@ export default {
               this.onGetShopInfo(this.$root.token);
             }
           }
-          // 拦截发货地址列表以及默认发货地址信息
-          if (url.indexOf("/api/taobao") > -1) {
-            const { logistics_address_search_response = {} } =
-              JSON.parse(data) || {};
-            const { addresses = {} } = logistics_address_search_response || {};
-            const { address_result = [] } = addresses || {};
-            if (address_result.length > 0) {
-              this.addresses = address_result;
-              this.defAddress = this.addresses.find((item) => item.get_def);
-            }
-          }
-          // 拦截合并订单接口并刷新列表
-          if (url.indexOf("/api/trade-pack/manual-merge-pack") > -1) {
-            // this.onRefresh();
-            if (!Array.isArray(JSON.parse(data))) {
-              this.onRefresh();
-            }
-          }
-          // 拦截取消合并订单接口并刷新列表
-          if (url.indexOf("/api/trade-pack/cancel-pack") > -1) {
-            this.onRefresh();
+          // 获取pdd快递列表
+          if (url.indexOf("/api/logistics-company/find-all") > -1) {
+            const list = JSON.parse(data) || [];
+            this.pddLogistics = list;
           }
           handler.next(response);
         },
@@ -1099,12 +1132,11 @@ export default {
               listData.orderErrorList = [];
               this.balance = balance;
               const { logisticsNumber = "" } = ok[0];
-              console.log(logisticsNumber);
-              // if (this.pushType === "send") {
-              //   this.onDelivery({ listData, logisticsNumber });
-              // } else {
-              //   this.onSaveRecord({ listData, logisticsNumber });
-              // }
+              if (this.pushType === "send") {
+                this.onDelivery({ listData, logisticsNumber });
+              } else {
+                this.onSaveRecord({ listData, logisticsNumber });
+              }
             }
           } else {
             this.pushLoading = false;
@@ -1122,46 +1154,45 @@ export default {
     // 发货
     onDelivery({ listData, logisticsNumber }) {
       const { defaultShopId = null } = this.userInfo || {};
-      const { contact_id = null } = this.defAddress || {};
-      const { cpCode = "" } = this.logistics[0] || {};
+      const { cpCode = "" } = this.templateInfo || {};
+      const { id = "" } = this.pddLogistics.find(
+        (item) => item.code === cpCode
+      );
       const { trades = [] } = listData || {};
-      const logisticsSendList = trades.map((trade) => {
-        const { tid = "", orders = [] } = trade || {};
-        return {
-          cancelId: contact_id,
-          companyCode: cpCode,
-          isSplit: 1,
-          outSid: logisticsNumber,
-          senderId: contact_id,
-          tid,
-          subTid: orders.map((order) => order.oid).join(","),
+      trades.forEach((trade, index) => {
+        const { tid = "" } = trade || {};
+        const data = {
+          apiMethodName: "pdd.logistics.online.send",
+          shopId: defaultShopId,
+          textParams: {
+            logistics_id: id,
+            order_sn: tid,
+            redelivery_type: 1,
+            refund_address_id: this.$root.refundAddressId,
+            tracking_number: logisticsNumber,
+          },
         };
-      });
-      const data = {
-        logisticsSendList,
-        sendType: "offline",
-        shopId: defaultShopId,
-      };
-      $.ajax({
-        url: "//zft.topchitu.com/api/taobao/logistics-send",
-        type: "POST",
-        contentType: "application/json; charset=utf-8",
-        dataType: "json",
-        data: JSON.stringify(data),
-      })
-        .then((response) => {
-          if (response.every((item) => item.success)) {
-            this.$message.success("推送成功");
-            listData.isPush = true;
-          } else {
-            this.$message.error(`发货失败`);
-          }
-          this.pushLoading = false;
+        $.ajax({
+          url: "//ctdd.topchitu.com/api/pdd",
+          type: "POST",
+          contentType: "application/json; charset=utf-8",
+          dataType: "json",
+          data: JSON.stringify(data),
         })
-        .catch((error) => {
-          this.pushLoading = false;
-          console.log(error);
-        });
+          .then(() => {
+            if (index + 1 === trades.length) {
+              this.$message.success("推送成功");
+              listData.isPush = true;
+            }
+            this.pushLoading = false;
+          })
+          .catch((error) => {
+            this.pushLoading = false;
+            const { responseJSON = {} } = error || {};
+            const { sub_msg = "" } = responseJSON || {};
+            this.$message.error(sub_msg);
+          });
+      });
     },
     // 保存推送记录
     onSaveRecord({ listData, logisticsNumber }) {
@@ -1203,95 +1234,47 @@ export default {
         });
     },
     // 修改备注
-    onSaveRemark(listData) {
-      const { trades = [] } = listData || {};
-      const tradeList = JSON.parse(JSON.stringify(trades));
-      this.onChangeRemark({ listData, tradeList });
-    },
-    // 修改备注api
-    onChangeRemark({ listData, tradeList }) {
-      if (tradeList.length === 0) {
-        this.onSplit(listData);
-      } else {
-        const { defaultShopId = null } = this.userInfo || {};
-        const { tid = "", sellerMemo = "", sellerFlag = "" } =
-          tradeList[0] || {};
-        const data = {
-          apiMethodName: "taobao.trade.memo.update",
-          textParams: {
-            tid,
-            memo: `#已推送#\n${sellerMemo}`,
+    async onSaveRemark(listData) {
+      try {
+        const { trades = [] } = listData || {};
+        const tradeList = JSON.parse(JSON.stringify(trades));
+        for (let index in tradeList) {
+          const { tid = "", sellerMemo = "", sellerFlag = "" } = tradeList[
+            index
+          ];
+          const data = {
             flag: sellerFlag,
-            reset: false,
-          },
-          shopId: defaultShopId,
-        };
-        $.ajax({
-          url: "//zft.topchitu.com/api/taobao",
-          type: "POST",
-          contentType: "application/json; charset=utf-8",
-          dataType: "json",
-          data: JSON.stringify(data),
-        })
-          .then((response) => {
-            const { trade_memo_update_response = null } = response || {};
-            if (trade_memo_update_response) {
-              if (tradeList.length === 1) {
-                const { trades = [] } = listData || {};
-                trades[0].sellerMemo = `#已推送#\n${sellerMemo}`;
-                trades[0].sellerFlag = sellerFlag;
-              }
-              tradeList.splice(0, 1);
-              setTimeout(() => {
-                this.onChangeRemark({ listData, tradeList });
-              }, 1500);
-            } else {
-              this.pushLoading = false;
-              this.$message.error(`推送失败`);
-            }
-          })
-          .catch((error) => {
-            const { responseJSON = {} } = error || {};
-            const { subMsg = "", subCode = "" } = responseJSON || {};
-            this.$message.error(subMsg || subCode);
-            this.pushLoading = false;
+            tradeMemoList: [
+              {
+                tid,
+                memo: `#已推送#\n${sellerMemo}`,
+              },
+            ],
+          };
+          const resopnse = await $.ajax({
+            url: "//ctdd.topchitu.com/api/trade-memo/bulk-save",
+            type: "POST",
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            data: JSON.stringify(data),
+            headers: {
+              "x-pdd-pagecode": this.$root.pagecode,
+              "x-pdd-pati": this.$root.pati,
+              shopid: this.$root.shopId,
+            },
           });
-      }
-    },
-    // 拆单
-    onSplit(listData) {
-      const { defaultShopId = null } = this.userInfo || {};
-      const { packId = "", trades = [] } = listData || {};
-      if (trades.length === 1) {
-        this.$message.success("推送成功");
-        listData.isPush = true;
-        this.pushLoading = false;
-        return;
-      }
-      const data = {
-        packId,
-        oidList: trades.map((item) => item.tid),
-        tidList: trades.map((item) => item.tid),
-      };
-      $.ajax({
-        url: "//zft.topchitu.com/api/trade-pack/cancel-pack",
-        type: "POST",
-        contentType: "application/json; charset=utf-8",
-        dataType: "json",
-        data: JSON.stringify(data),
-        headers: {
-          shopid: defaultShopId,
-        },
-      })
-        .then((response) => {
-          if (response.length && response.length > 0) {
-            this.$message.success("推送成功");
+          trades[index].sellerMemo = `#已推送#\n${sellerMemo}`;
+          trades[index].sellerFlag = sellerFlag;
+          if (tradeList.length === index + 1) {
             this.pushLoading = false;
           }
-        })
-        .catch((error) => {
-          console.log(error);
-        });
+        }
+      } catch (error) {
+        const { responseJSON = {} } = error || {};
+        const { msg = "" } = responseJSON || {};
+        this.$message.error(msg);
+        this.pushLoading = false;
+      }
     },
     onLogin() {
       if (!this.userInfo) {
