@@ -773,9 +773,8 @@ export default {
                   response || {};
                 const { refund_address_list = [] } =
                   refund_address_list_get_response || {};
-                const {
-                  refund_address_id: refundAddressId = "",
-                } = refund_address_list[0];
+                const { refund_address_id: refundAddressId = "" } =
+                  refund_address_list[0] || {};
                 sessionStorage.setItem("refundAddressId", refundAddressId);
                 this.$root.refundAddressId = refundAddressId;
               })
@@ -1055,7 +1054,7 @@ export default {
           this.$message.error("获取明文信息失败");
         }
       } catch (error) {
-        console.log();
+        console.log(error);
         const { responseJSON = {} } = error || {};
         const { msg = "" } = responseJSON || {};
         this.$message.error(msg);
@@ -1103,7 +1102,6 @@ export default {
           },
         ],
       };
-      console.log(data);
       $.ajax({
         url: "https://ryanopen.prprp.com/api/order/json",
         type: "POST",
@@ -1116,6 +1114,7 @@ export default {
         .then((response) => {
           const { status = null, msg = "", data = {} } = response || {};
           const { error = [], ok = [], balance = null } = data || {};
+          console.log(response);
           if (status === 200) {
             if (error.length > 0) {
               const { orderError = [], skuError = [] } = error[0];
@@ -1251,7 +1250,7 @@ export default {
               },
             ],
           };
-          const resopnse = await $.ajax({
+          await $.ajax({
             url: "//ctdd.topchitu.com/api/trade-memo/bulk-save",
             type: "POST",
             contentType: "application/json; charset=utf-8",
@@ -1265,10 +1264,8 @@ export default {
           });
           trades[index].sellerMemo = `#已推送#\n${sellerMemo}`;
           trades[index].sellerFlag = sellerFlag;
-          if (tradeList.length === index + 1) {
-            this.pushLoading = false;
-          }
         }
+        this.pushLoading = false;
       } catch (error) {
         const { responseJSON = {} } = error || {};
         const { msg = "" } = responseJSON || {};
@@ -1333,10 +1330,15 @@ export default {
         this.$message.error("请选择推送后操作");
         return;
       }
+      if (!this.$root.refundAddressId) {
+        this.$message.error("请设置退货地址");
+        return;
+      }
       if (this.globalTime !== 0) {
         this.$message.error("3秒延迟中，请勿频繁操作");
         return;
       }
+
       if (this.pushLoading) {
         return;
       }
@@ -1350,14 +1352,14 @@ export default {
     },
     onHandleRemarkSkuList(moreRemarks) {
       if (moreRemarks == "") {
-        this.$message.error("红旗备注信息为空");
+        this.$message.error("备注信息为空");
         return false;
       }
       let text = moreRemarks;
       let regList = /(?<=\【)[^\【\】]+(?=\】)/g;
       let list = text.match(regList);
       if (!list) {
-        this.$message.error("红旗备注格式不对");
+        this.$message.error("备注格式不正确");
         return false;
       }
       for (var i = 0; i < list.length; i++) {

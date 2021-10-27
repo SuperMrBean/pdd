@@ -855,7 +855,7 @@ export default {
               },
             ],
           };
-          const resopnse = await $.ajax({
+          await $.ajax({
             url: "//ctdd.topchitu.com/api/trade-memo/bulk-save",
             type: "POST",
             contentType: "application/json; charset=utf-8",
@@ -869,13 +869,11 @@ export default {
           });
           trades[index].sellerMemo = `#已推送#\n${sellerMemo}`;
           trades[index].sellerFlag = sellerFlag;
-          if (tradeList.length === index + 1) {
-            listData.isPush = true;
-            this.$message.success("推送成功");
-            this.isVisible = false;
-          }
-          this.loading = false;
         }
+        listData.isPush = true;
+        this.$message.success("推送成功");
+        this.isVisible = false;
+        this.loading = false;
       } catch (error) {
         const { responseJSON = {} } = error || {};
         const { msg = "" } = responseJSON || {};
@@ -954,6 +952,10 @@ export default {
     onPush() {
       if (this.orderSkuList.length === 0) {
         this.$message.error("请至少添加一个子订单");
+        return;
+      }
+      if (!this.$root.refundAddressId) {
+        this.$message.error("请设置退货地址");
         return;
       }
       if (this.globalTime !== 0) {
@@ -1112,14 +1114,14 @@ export default {
     },
     onHandleRemarkSkuList(moreRemarks) {
       if (moreRemarks == "") {
-        this.$message.error("红旗备注信息为空");
+        this.$message.error("备注信息为空");
         return false;
       }
       let text = moreRemarks;
       let regList = /(?<=\【)[^\【\】]+(?=\】)/g;
       let list = text.match(regList);
       if (!list) {
-        this.$message.error("红旗备注格式不对");
+        this.$message.error("备注格式不正确");
         return false;
       }
       for (var i = 0; i < list.length; i++) {
