@@ -94,8 +94,12 @@ export default {
       type: Array || null,
       require: true,
     },
-    defAddress: {
+    templateInfo: {
       type: Object || null,
+      require: true,
+    },
+    pddLogistics: {
+      type: Array || null,
       require: true,
     },
     userInfo: {
@@ -176,91 +180,91 @@ export default {
     onDelivery(listData) {
       this.sendLoading = true;
       const { defaultShopId = null } = this.userInfo || {};
-      const { contact_id = null } = this.defAddress || {};
-      const { logistics = "", logisticsNumber = "", orderId = "", id = "" } =
+      const { cpCode = "" } = this.templateInfo || {};
+      const { id = "" } = this.pddLogistics.find(
+        (item) => item.code === cpCode
+      );
+      const { orderId = "", logisticsNumber = "", id: listId = "" } =
         listData || {};
-      const logisticsSendList = [
-        {
-          cancelId: contact_id,
-          companyCode: logistics,
-          isSplit: 1,
-          outSid: logisticsNumber,
-          senderId: contact_id,
-          tid: orderId,
-          subTid: orderId,
-        },
-      ];
       const data = {
-        logisticsSendList,
-        sendType: "offline",
+        apiMethodName: "pdd.logistics.online.send",
         shopId: defaultShopId,
+        textParams: {
+          logistics_id: id,
+          order_sn: orderId,
+          redelivery_type: 1,
+          refund_address_id: this.$root.refundAddressId,
+          tracking_number: logisticsNumber,
+        },
       };
       $.ajax({
-        url: "//zft.topchitu.com/api/taobao/logistics-send",
+        url: "//ctdd.topchitu.com/api/pdd",
         type: "POST",
         contentType: "application/json; charset=utf-8",
         dataType: "json",
         data: JSON.stringify(data),
       })
-        .then((response) => {
-          if (response.every((item) => item.success)) {
-            this.onChangeStatus(id, 2);
-          } else {
-            this.onChangeStatus(id, 3);
-            this.$message.error(`发货失败`);
-          }
+        .then(() => {
+          this.onChangeStatus(listId, 2);
         })
         .catch((error) => {
+          this.onChangeStatus(listId, 3);
+          const { responseJSON = {} } = error || {};
+          const { sub_msg = "" } = responseJSON || {};
           this.sendLoading = false;
-          console.log(error);
+          this.$message.error(sub_msg);
         });
     },
     // 一键发货
-    onDeliveryAll() {
+    async onDeliveryAll() {
       this.sendLoading = true;
       const { defaultShopId = null } = this.userInfo || {};
-      const { contact_id = null } = this.defAddress || {};
+      const { cpCode = "" } = this.templateInfo || {};
+      const { id = "" } = this.pddLogistics.find(
+        (item) => item.code === cpCode
+      );
       const list = this.list.filter((item) => {
         return item.status === 1;
       });
-      const logisticsSendList = list.map((item) => {
-        const { logistics = "", logisticsNumber = "", orderId = "", id = "" } =
-          item || {};
-        return {
-          cancelId: contact_id,
-          companyCode: logistics,
-          isSplit: 1,
-          outSid: logisticsNumber,
-          senderId: contact_id,
-          tid: orderId,
-          subTid: orderId,
+      const resList = [];
+      for (let index in list) {
+        const { orderId = "", logisticsNumber = "", id: listId = "" } =
+          list[index] || {};
+        const data = {
+          apiMethodName: "pdd.logistics.online.send",
+          shopId: defaultShopId,
+          textParams: {
+            logistics_id: id,
+            order_sn: orderId,
+            redelivery_type: 1,
+            refund_address_id: this.$root.refundAddressId,
+            tracking_number: logisticsNumber,
+          },
         };
-      });
-      const data = {
-        logisticsSendList,
-        sendType: "offline",
-        shopId: defaultShopId,
-      };
-      $.ajax({
-        url: "//zft.topchitu.com/api/taobao/logistics-send",
-        type: "POST",
-        contentType: "application/json; charset=utf-8",
-        dataType: "json",
-        data: JSON.stringify(data),
-      })
-        .then((response) => {
-          const resList = response.map((item, index) => {
-            return {
-              id: list[index].id,
-              status: item.success ? 2 : 3,
-            };
-          });
-          this.onChangeStatusAll(resList);
+        await $.ajax({
+          url: "//ctdd.topchitu.com/api/pdd",
+          type: "POST",
+          contentType: "application/json; charset=utf-8",
+          dataType: "json",
+          data: JSON.stringify(data),
         })
-        .catch((error) => {
-          this.sendLoading = false;
-          console.log(error);
-        });
+          .then(() => {
+            resList.push({
+              id: listId,
+              status: 2,
+            });
+          })
+          .catch((error) => {
+            resList.push({
+              id: listId,
+              status: 3,
+            });
+            const { responseJSON = {} } = error || {};
+            const { sub_msg = "" } = responseJSON || {};
+            this.$message.error(sub_msg);
+          });
+      }
+      this.onChangeStatusAll(resList);
     },
     onChangeStatus(id, status) {
       const params = [
@@ -301,7 +305,7 @@ export default {
     },
     onChangeStatusAll(list) {
       $.ajax({
-        url: "https://ryanopen.prprp.com/api/callbackRecord/updateStatus",
+        url: "https://openryan.prprp.com/api/callbackRecord/updateStatus",
         type: "POST",
         contentType: "application/json; charset=utf-8",
         headers: {

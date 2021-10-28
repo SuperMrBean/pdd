@@ -481,7 +481,8 @@
       :visible.sync="dialogRecord.visible"
       :logistics="logistics"
       :userInfo="userInfo"
-      :defAddress="defAddress"
+      :templateInfo="templateInfo"
+      :pddLogistics="pddLogistics"
     />
   </div>
 </template>
@@ -734,7 +735,6 @@ export default {
                 orderErrorList: [],
               };
             });
-            console.log(this.list);
           }
           // 拦截列表旗帜信息
           if (url.indexOf("/trade-print/get-seller-flag-by-tids") > -1) {
@@ -1114,7 +1114,6 @@ export default {
         .then((response) => {
           const { status = null, msg = "", data = {} } = response || {};
           const { error = [], ok = [], balance = null } = data || {};
-          console.log(response);
           if (status === 200) {
             if (error.length > 0) {
               const { orderError = [], skuError = [] } = error[0];
