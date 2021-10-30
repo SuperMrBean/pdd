@@ -356,6 +356,14 @@ export default {
       type: Array || null,
       require: true,
     },
+    templateInfo: {
+      type: Object || null,
+      require: true,
+    },
+    pddLogistics: {
+      type: Array || null,
+      require: true,
+    },
     pushType: {
       type: String,
       require: true,

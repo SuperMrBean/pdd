@@ -1264,6 +1264,8 @@ export default {
           trades[index].sellerMemo = `#已推送#\n${sellerMemo}`;
           trades[index].sellerFlag = sellerFlag;
         }
+        this.$message.success("推送成功");
+        listData.isPush = true;
         this.pushLoading = false;
       } catch (error) {
         const { responseJSON = {} } = error || {};
