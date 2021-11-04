@@ -153,7 +153,7 @@ export default {
         pageNo: this.pageNo,
       };
       $.ajax({
-        url: "https://ryanopen.prprp.com/api/callbackRecord/page",
+        url: "https://yh-test.prprp.com/api/callbackRecord/page",
         type: "GET",
         headers: {
           token: this.$root.token,
@@ -178,6 +178,18 @@ export default {
     },
     // 发货
     onDelivery(listData) {
+      if (!this.userInfo.defaultShopId) {
+        this.$message.error("获取店铺信息失败，请稍后再试");
+        return;
+      }
+      if (!this.templateInfo.cpCode) {
+        this.$message.error("获取快递模板信息失败，请稍后再试");
+        return;
+      }
+      if (this.pddLogistics.length === 0) {
+        this.$message.error("获取追风兔快递列表失败，请稍后再试");
+        return;
+      }
       this.sendLoading = true;
       const { defaultShopId = null } = this.userInfo || {};
       const { cpCode = "" } = this.templateInfo || {};
@@ -217,6 +229,18 @@ export default {
     },
     // 一键发货
     async onDeliveryAll() {
+      if (!this.userInfo.defaultShopId) {
+        this.$message.error("获取店铺信息失败，请稍后再试");
+        return;
+      }
+      if (!this.templateInfo.cpCode) {
+        this.$message.error("获取快递模板信息失败，请稍后再试");
+        return;
+      }
+      if (this.pddLogistics.length === 0) {
+        this.$message.error("获取追风兔快递列表失败，请稍后再试");
+        return;
+      }
       this.sendLoading = true;
       const { defaultShopId = null } = this.userInfo || {};
       const { cpCode = "" } = this.templateInfo || {};
@@ -274,7 +298,7 @@ export default {
         },
       ];
       $.ajax({
-        url: "https://ryanopen.prprp.com/api/callbackRecord/updateStatus",
+        url: "https://yh-test.prprp.com/api/callbackRecord/updateStatus",
         type: "POST",
         contentType: "application/json; charset=utf-8",
         headers: {
@@ -305,7 +329,7 @@ export default {
     },
     onChangeStatusAll(list) {
       $.ajax({
-        url: "https://openryan.prprp.com/api/callbackRecord/updateStatus",
+        url: "https://yh-test.prprp.com/api/callbackRecord/updateStatus",
         type: "POST",
         contentType: "application/json; charset=utf-8",
         headers: {

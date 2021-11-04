@@ -745,6 +745,7 @@ export default {
               return acc;
             }, {});
             this.flagObj = flagObj;
+            console.log(flagObj);
           }
           // 拦截用户信息
           if (url.indexOf("/user/login-user") > -1) {
@@ -804,7 +805,7 @@ export default {
     // 请求店铺信息并做店铺名字校验
     onGetShopInfo(token) {
       $.ajax({
-        url: "https://ryanopen.prprp.com/api/user/my_info",
+        url: "https://yh-test.prprp.com/api/user/my_info",
         type: "GET",
         headers: {
           token,
@@ -827,7 +828,7 @@ export default {
     // 获取商家余额
     onGetBalance() {
       $.ajax({
-        url: "https://ryanopen.prprp.com/api/user/my_account",
+        url: "https://yh-test.prprp.com/api/user/my_account",
         type: "GET",
         headers: {
           token: this.$root.token,
@@ -851,7 +852,7 @@ export default {
     // 请求快递列表
     onGetLogistics() {
       $.ajax({
-        url: "https://ryanopen.prprp.com/api/common/logistics/all",
+        url: "https://yh-test.prprp.com/api/common/logistics/all",
         type: "GET",
         headers: {
           token: this.$root.token,
@@ -975,7 +976,7 @@ export default {
         };
       });
       $.ajax({
-        url: "https://ryanopen.prprp.com/api/product/parsePushSkuList",
+        url: "https://yh-test.prprp.com/api/product/parsePushSkuList",
         type: "POST",
         contentType: "application/json; charset=utf-8",
         dataType: "json",
@@ -1103,7 +1104,7 @@ export default {
         ],
       };
       $.ajax({
-        url: "https://ryanopen.prprp.com/api/order/json",
+        url: "https://yh-test.prprp.com/api/order/json",
         type: "POST",
         headers: {
           token: this.$root.token,
@@ -1207,7 +1208,7 @@ export default {
         };
       });
       $.ajax({
-        url: "https://ryanopen.prprp.com/api/callbackRecord/savePushOrder",
+        url: "https://yh-test.prprp.com/api/callbackRecord/savePushOrder",
         type: "POST",
         contentType: "application/json; charset=utf-8",
         headers: {
@@ -1339,7 +1340,28 @@ export default {
         this.$message.error("3秒延迟中，请勿频繁操作");
         return;
       }
-
+      if (!this.userInfo.defaultShopId) {
+        this.$message.error("获取店铺信息失败，请稍后再试");
+        return;
+      }
+      if (!this.templateInfo.cpCode) {
+        this.$message.error("获取快递模板信息失败，请稍后再试");
+        return;
+      }
+      if (this.pddLogistics.length === 0) {
+        this.$message.error("获取追风兔快递列表失败，请稍后再试");
+        return;
+      }
+      if (this.logistics.length === 0) {
+        this.$message.error("获取平台快递列表失败，请稍后再试");
+        return;
+      }
+      const { trades = [] } = listData || {};
+      const { sellerFlag = null } = trades[0] || {};
+      if (sellerFlag === null) {
+        this.$message.error("获取旗帜信息失败，请稍后再试");
+        return;
+      }
       if (this.pushLoading) {
         return;
       }

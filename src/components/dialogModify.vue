@@ -521,7 +521,7 @@ export default {
     // 获取省市区数据
     onGetProvinceList() {
       $.ajax({
-        url: "https://ryanopen.prprp.com/api/common/cascadingStreets",
+        url: "https://yh-test.prprp.com/api/common/cascadingStreets",
         type: "GET",
         headers: {
           token: this.$root.token,
@@ -635,7 +635,7 @@ export default {
         };
       });
       $.ajax({
-        url: "https://ryanopen.prprp.com/api/product/parsePushSkuList",
+        url: "https://yh-test.prprp.com/api/product/parsePushSkuList",
         type: "POST",
         contentType: "application/json; charset=utf-8",
         dataType: "json",
@@ -663,7 +663,7 @@ export default {
     // 检查skuList
     onCheckSkuList() {
       $.ajax({
-        url: "https://ryanopen.prprp.com/api/product/parsePushSkuList",
+        url: "https://yh-test.prprp.com/api/product/parsePushSkuList",
         type: "POST",
         contentType: "application/json; charset=utf-8",
         dataType: "json",
@@ -723,7 +723,7 @@ export default {
         ],
       };
       $.ajax({
-        url: "https://ryanopen.prprp.com/api/order/json",
+        url: "https://yh-test.prprp.com/api/order/json",
         type: "POST",
         headers: {
           token: this.$root.token,
@@ -821,7 +821,7 @@ export default {
         },
       ];
       $.ajax({
-        url: "https://ryanopen.prprp.com/api/callbackRecord/savePushOrder",
+        url: "https://yh-test.prprp.com/api/callbackRecord/savePushOrder",
         type: "POST",
         contentType: "application/json; charset=utf-8",
         headers: {
@@ -970,6 +970,28 @@ export default {
         this.$message.error("3秒延迟中，请勿频繁操作");
         return;
       }
+      if (!this.userInfo.defaultShopId) {
+        this.$message.error("获取店铺信息失败，请稍后再试");
+        return;
+      }
+      if (!this.templateInfo.cpCode) {
+        this.$message.error("获取快递模板信息失败，请稍后再试");
+        return;
+      }
+      if (this.pddLogistics.length === 0) {
+        this.$message.error("获取追风兔快递列表失败，请稍后再试");
+        return;
+      }
+      if (this.logistics.length === 0) {
+        this.$message.error("获取平台快递列表失败，请稍后再试");
+        return;
+      }
+      const { trades = [] } = this.data || {};
+      const { sellerFlag = null } = trades[0] || {};
+      if (sellerFlag === null) {
+        this.$message.error("获取旗帜信息失败，请稍后再试");
+        return;
+      }
       if (this.loading) {
         return;
       }
@@ -990,7 +1012,7 @@ export default {
         address: this.detailAddress,
       };
       $.ajax({
-        url: "https://ryanopen.prprp.com/api/common/address/parse",
+        url: "https://yh-test.prprp.com/api/common/address/parse",
         type: "GET",
         contentType: "application/json; charset=utf-8",
         dataType: "json",
@@ -1187,7 +1209,7 @@ export default {
         return;
       }
       $.ajax({
-        url: "https://ryanopen.prprp.com/api/product/parsePushSkuList",
+        url: "https://yh-test.prprp.com/api/product/parsePushSkuList",
         type: "POST",
         contentType: "application/json; charset=utf-8",
         dataType: "json",

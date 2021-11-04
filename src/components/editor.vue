@@ -10,7 +10,7 @@ export default {
   props: {
     apiUrl: {
       type: String,
-      default: "https://ryanopen.prprp.com/api/upload/oss",
+      default: "https://yh-test.prprp.com/api/upload/oss",
     },
   },
   data: function() {
