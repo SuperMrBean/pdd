@@ -153,7 +153,7 @@ export default {
         pageNo: this.pageNo,
       };
       $.ajax({
-        url: "https://yh-test.prprp.com/api/callbackRecord/page",
+        url: "https://yh.prprp.com/api/callbackRecord/page",
         type: "GET",
         headers: {
           token: this.$root.token,
@@ -298,7 +298,7 @@ export default {
         },
       ];
       $.ajax({
-        url: "https://yh-test.prprp.com/api/callbackRecord/updateStatus",
+        url: "https://yh.prprp.com/api/callbackRecord/updateStatus",
         type: "POST",
         contentType: "application/json; charset=utf-8",
         headers: {
@@ -329,7 +329,7 @@ export default {
     },
     onChangeStatusAll(list) {
       $.ajax({
-        url: "https://yh-test.prprp.com/api/callbackRecord/updateStatus",
+        url: "https://yh.prprp.com/api/callbackRecord/updateStatus",
         type: "POST",
         contentType: "application/json; charset=utf-8",
         headers: {
