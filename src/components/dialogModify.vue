@@ -356,10 +356,6 @@ export default {
       type: Array || null,
       require: true,
     },
-    templateInfo: {
-      type: Object || null,
-      require: true,
-    },
     pddLogistics: {
       type: Array || null,
       require: true,
@@ -767,9 +763,8 @@ export default {
     // 发货
     onDelivery({ listData, logisticsNumber }) {
       const { defaultShopId = null } = this.userInfo || {};
-      const { cpCode = "" } = this.templateInfo || {};
       const { id = "" } = this.pddLogistics.find(
-        (item) => item.code === cpCode
+        (item) => item.code === this.order.cpCode
       );
       const { trades = [] } = listData || {};
       trades.forEach((trade, index) => {
@@ -972,10 +967,6 @@ export default {
       }
       if (!this.userInfo.defaultShopId) {
         this.$message.error("获取店铺信息失败，请稍后再试");
-        return;
-      }
-      if (!this.templateInfo.cpCode) {
-        this.$message.error("获取快递模板信息失败，请稍后再试");
         return;
       }
       if (this.pddLogistics.length === 0) {

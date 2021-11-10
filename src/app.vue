@@ -459,7 +459,6 @@
       :logistics="logistics"
       :pddLogistics="pddLogistics"
       :pushType="pushType"
-      :templateInfo="templateInfo"
       :globalTime="globalTime"
       @lock="onLockPush"
       @refresh="onChangeBalance"
@@ -481,7 +480,6 @@
       :visible.sync="dialogRecord.visible"
       :logistics="logistics"
       :userInfo="userInfo"
-      :templateInfo="templateInfo"
       :pddLogistics="pddLogistics"
     />
   </div>
@@ -511,7 +509,6 @@ export default {
       show: false,
       userInfo: {},
       shopInfo: {},
-      templateInfo: {},
       balance: null,
       logistics: [],
       pddLogistics: [],
@@ -575,19 +572,6 @@ export default {
         onResponse: (response, handler) => {
           const { config = {}, response: data = {} } = response || {};
           const { url = "" } = config || {};
-          // 拦截userConfig信息
-          if (url.indexOf("/api/user-config/list") > -1) {
-            const userConfig = JSON.parse(data) || {};
-            const { printDefaultWaybillTemplateId = "" } = userConfig;
-            this.$root.templateId = Number(printDefaultWaybillTemplateId);
-          }
-          // 拦截模板信息
-          if (url.indexOf("/api/waybill-template/find-user-template") > -1) {
-            const templateList = JSON.parse(data) || [];
-            this.templateInfo = templateList.find(
-              (list) => list.id === this.$root.templateId
-            );
-          }
           // 拦截列表信息
           if (url.indexOf("/trade/details") > -1) {
             // 过滤掉完成和待确认订单
@@ -1153,7 +1137,7 @@ export default {
     // 发货
     onDelivery({ listData, logisticsNumber }) {
       const { defaultShopId = null } = this.userInfo || {};
-      const { cpCode = "" } = this.templateInfo || {};
+      const { cpCode = "" } = this.logistics[0] || {};
       const { id = "" } = this.pddLogistics.find(
         (item) => item.code === cpCode
       );
@@ -1342,10 +1326,6 @@ export default {
       }
       if (!this.userInfo.defaultShopId) {
         this.$message.error("获取店铺信息失败，请稍后再试");
-        return;
-      }
-      if (!this.templateInfo.cpCode) {
-        this.$message.error("获取快递模板信息失败，请稍后再试");
         return;
       }
       if (this.pddLogistics.length === 0) {

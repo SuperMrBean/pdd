@@ -94,10 +94,6 @@ export default {
       type: Array || null,
       require: true,
     },
-    templateInfo: {
-      type: Object || null,
-      require: true,
-    },
     pddLogistics: {
       type: Array || null,
       require: true,
@@ -182,22 +178,21 @@ export default {
         this.$message.error("获取店铺信息失败，请稍后再试");
         return;
       }
-      if (!this.templateInfo.cpCode) {
-        this.$message.error("获取快递模板信息失败，请稍后再试");
-        return;
-      }
       if (this.pddLogistics.length === 0) {
         this.$message.error("获取追风兔快递列表失败，请稍后再试");
         return;
       }
       this.sendLoading = true;
       const { defaultShopId = null } = this.userInfo || {};
-      const { cpCode = "" } = this.templateInfo || {};
+      const {
+        orderId = "",
+        logisticsNumber = "",
+        id: listId = "",
+        logistics: cpCode = "",
+      } = listData || {};
       const { id = "" } = this.pddLogistics.find(
         (item) => item.code === cpCode
       );
-      const { orderId = "", logisticsNumber = "", id: listId = "" } =
-        listData || {};
       const data = {
         apiMethodName: "pdd.logistics.online.send",
         shopId: defaultShopId,
@@ -233,27 +228,26 @@ export default {
         this.$message.error("获取店铺信息失败，请稍后再试");
         return;
       }
-      if (!this.templateInfo.cpCode) {
-        this.$message.error("获取快递模板信息失败，请稍后再试");
-        return;
-      }
       if (this.pddLogistics.length === 0) {
         this.$message.error("获取追风兔快递列表失败，请稍后再试");
         return;
       }
       this.sendLoading = true;
       const { defaultShopId = null } = this.userInfo || {};
-      const { cpCode = "" } = this.templateInfo || {};
-      const { id = "" } = this.pddLogistics.find(
-        (item) => item.code === cpCode
-      );
       const list = this.list.filter((item) => {
         return item.status === 1;
       });
       const resList = [];
       for (let index in list) {
-        const { orderId = "", logisticsNumber = "", id: listId = "" } =
-          list[index] || {};
+        const {
+          orderId = "",
+          logisticsNumber = "",
+          id: listId = "",
+          logistics: cpCode = "",
+        } = list[index] || {};
+        const { id = "" } = this.pddLogistics.find(
+          (item) => item.code === cpCode
+        );
         const data = {
           apiMethodName: "pdd.logistics.online.send",
           shopId: defaultShopId,
