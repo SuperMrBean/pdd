@@ -661,7 +661,11 @@ export default {
                     receiverDistrict: receiver_district,
                     receiverMobile: receiver_mobile_mask,
                     receiverName: receiver_name_mask,
-                    receiverState: receiver_state,
+                    receiverState: receiver_state
+                      .replace("北京市", "北京")
+                      .replace("重庆市", "重庆")
+                      .replace("上海市", "上海")
+                      .replace("天津市", "天津"),
                     receiverTown: receiver_town,
                     receiverMobileEncrypt: receiver_mobile_encrypt,
                   },
@@ -789,7 +793,7 @@ export default {
     // 请求店铺信息并做店铺名字校验
     onGetShopInfo(token) {
       $.ajax({
-        url: "https://yh-test.prprp.com/api/user/my_info",
+        url: "https://yh.prprp.com/api/user/my_info",
         type: "GET",
         headers: {
           token,
@@ -812,7 +816,7 @@ export default {
     // 获取商家余额
     onGetBalance() {
       $.ajax({
-        url: "https://yh-test.prprp.com/api/user/my_account",
+        url: "https://yh.prprp.com/api/user/my_account",
         type: "GET",
         headers: {
           token: this.$root.token,
@@ -836,7 +840,7 @@ export default {
     // 请求快递列表
     onGetLogistics() {
       $.ajax({
-        url: "https://yh-test.prprp.com/api/common/logistics/all",
+        url: "https://yh.prprp.com/api/common/logistics/all",
         type: "GET",
         headers: {
           token: this.$root.token,
@@ -960,7 +964,7 @@ export default {
         };
       });
       $.ajax({
-        url: "https://yh-test.prprp.com/api/product/parsePushSkuList",
+        url: "https://yh.prprp.com/api/product/parsePushSkuList",
         type: "POST",
         contentType: "application/json; charset=utf-8",
         dataType: "json",
@@ -1088,7 +1092,7 @@ export default {
         ],
       };
       $.ajax({
-        url: "https://yh-test.prprp.com/api/order/json",
+        url: "https://yh.prprp.com/api/order/json",
         type: "POST",
         headers: {
           token: this.$root.token,
@@ -1192,7 +1196,7 @@ export default {
         };
       });
       $.ajax({
-        url: "https://yh-test.prprp.com/api/callbackRecord/savePushOrder",
+        url: "https://yh.prprp.com/api/callbackRecord/savePushOrder",
         type: "POST",
         contentType: "application/json; charset=utf-8",
         headers: {

@@ -471,7 +471,7 @@ export default {
     // 获取省市区数据
     onGetProvinceList() {
       $.ajax({
-        url: "https://yh-test.prprp.com/api/common/cascadingStreets",
+        url: "https://yh.prprp.com/api/common/cascadingStreets",
         type: "GET",
         headers: {
           token: this.$root.token,
@@ -543,7 +543,7 @@ export default {
         };
       });
       $.ajax({
-        url: "https://yh-test.prprp.com/api/product/parsePushSkuList",
+        url: "https://yh.prprp.com/api/product/parsePushSkuList",
         type: "POST",
         contentType: "application/json; charset=utf-8",
         dataType: "json",
@@ -571,7 +571,7 @@ export default {
     // 检查skuList
     onCheckSkuList() {
       $.ajax({
-        url: "https://yh-test.prprp.com/api/product/parsePushSkuList",
+        url: "https://yh.prprp.com/api/product/parsePushSkuList",
         type: "POST",
         contentType: "application/json; charset=utf-8",
         dataType: "json",
@@ -633,7 +633,7 @@ export default {
         ],
       };
       $.ajax({
-        url: "https://yh-test.prprp.com/api/order/json",
+        url: "https://yh.prprp.com/api/order/json",
         type: "POST",
         headers: {
           token: this.$root.token,
@@ -736,7 +736,7 @@ export default {
         address: this.detailAddress,
       };
       $.ajax({
-        url: "https://yh-test.prprp.com/api/common/address/parse",
+        url: "https://yh.prprp.com/api/common/address/parse",
         type: "GET",
         contentType: "application/json; charset=utf-8",
         dataType: "json",
@@ -884,7 +884,7 @@ export default {
         return;
       }
       $.ajax({
-        url: "https://yh-test.prprp.com/api/product/parsePushSkuList",
+        url: "https://yh.prprp.com/api/product/parsePushSkuList",
         type: "POST",
         contentType: "application/json; charset=utf-8",
         dataType: "json",
