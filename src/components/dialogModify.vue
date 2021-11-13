@@ -818,15 +818,16 @@ export default {
     // 保存推送记录
     onSaveRecord({ listData, logisticsNumber }) {
       const { trades = [] } = listData || {};
-      const { tid = "" } = trades[0];
-      const list = [
-        {
+      const { tid: parentOrderId = "" } = trades[0];
+      const list = trades.map((trade) => {
+        const { tid = "" } = trade || {};
+        return {
           logistics: this.order.cpCode,
           logisticsNumber,
           orderId: tid,
-          parentOrderId: tid,
-        },
-      ];
+          parentOrderId,
+        };
+      });
       $.ajax({
         url: "https://yh.prprp.com/api/callbackRecord/savePushOrder",
         type: "POST",
