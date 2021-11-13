@@ -991,79 +991,82 @@ export default {
     },
     // 获取明文信息
     async onGetItemDetail(listData, skuList) {
-      // try {
-      //   const { trades = [], receiverInfo = {} } = listData || {};
-      //   const { tid = "" } = trades[0] || {};
-      //   const { receiverMobileEncrypt = "", receiverMobile = "" } =
-      //     receiverInfo || {};
-      //   const data = {
-      //     decrypt_report_type: 0,
-      //     decrypt_set: {},
-      //     order_sn: tid,
-      //   };
-      //   const nameResponse = await $.ajax({
-      //     url: "//ctdd.topchitu.com/pdd/control/decrypt/v1/receiverName",
-      //     type: "POST",
-      //     contentType: "application/json; charset=utf-8",
-      //     dataType: "json",
-      //     data: JSON.stringify(data),
-      //     headers: {
-      //       "x-pdd-pagecode": this.$root.pagecode,
-      //       "x-pdd-pati": this.$root.pati,
-      //       shopid: this.$root.shopId,
-      //     },
-      //   });
-      //   const addressResponse = await $.ajax({
-      //     url: "//ctdd.topchitu.com/pdd/control/decrypt/v1/receiverAddress",
-      //     type: "POST",
-      //     contentType: "application/json; charset=utf-8",
-      //     dataType: "json",
-      //     data: JSON.stringify(data),
-      //     headers: {
-      //       "x-pdd-pagecode": this.$root.pagecode,
-      //       "x-pdd-pati": this.$root.pati,
-      //       shopid: this.$root.shopId,
-      //     },
-      //   });
-      //   const { order_info: nameInfo = {} } = nameResponse || {};
-      //   const { order_info: addressInfo = {} } = addressResponse || {};
-      //   const { receiver_name: receiverName = "" } = nameInfo || {};
-      //   const { receiver_address: receiverAddress = "" } = addressInfo || {};
-      //   if (receiverName && receiverAddress) {
-      //     this.onPushOrderJson(
-      //       receiverName.replace(/\[(.*?)\]/, ""),
-      //       receiverMobile,
-      //       receiverAddress.replace(/\[(.*?)\]/, ""),
-      //       receiverMobileEncrypt,
-      //       listData,
-      //       skuList
-      //     );
-      //   } else {
-      //     this.pushLoading = false;
-      //     this.$message.error("获取明文信息失败");
-      //   }
-      // } catch (error) {
-      //   console.log(error);
-      //   const { responseJSON = {} } = error || {};
-      //   const { msg = "" } = responseJSON || {};
-      //   this.$message.error(msg);
-      //   this.pushLoading = false;
-      // }
-      const { receiverInfo = {} } = listData || {};
-      const {
-        receiverMobileEncrypt = "",
-        receiverMobile = "",
-        receiverAddress = "",
-        receiverName = "",
-      } = receiverInfo || {};
-      this.onPushOrderJson(
-        receiverName,
-        receiverMobile,
-        receiverAddress,
-        receiverMobileEncrypt,
-        listData,
-        skuList
-      );
+      if (this.$root.isSwitch === "true") {
+        const { receiverInfo = {} } = listData || {};
+        const {
+          receiverMobileEncrypt = "",
+          receiverMobile = "",
+          receiverAddress = "",
+          receiverName = "",
+        } = receiverInfo || {};
+        this.onPushOrderJson(
+          receiverName,
+          receiverMobile,
+          receiverAddress,
+          receiverMobileEncrypt,
+          listData,
+          skuList
+        );
+      } else {
+        try {
+          const { trades = [], receiverInfo = {} } = listData || {};
+          const { tid = "" } = trades[0] || {};
+          const { receiverMobileEncrypt = "", receiverMobile = "" } =
+            receiverInfo || {};
+          const data = {
+            decrypt_report_type: 0,
+            decrypt_set: {},
+            order_sn: tid,
+          };
+          const nameResponse = await $.ajax({
+            url: "//ctdd.topchitu.com/pdd/control/decrypt/v1/receiverName",
+            type: "POST",
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            data: JSON.stringify(data),
+            headers: {
+              "x-pdd-pagecode": this.$root.pagecode,
+              "x-pdd-pati": this.$root.pati,
+              shopid: this.$root.shopId,
+            },
+          });
+          const addressResponse = await $.ajax({
+            url: "//ctdd.topchitu.com/pdd/control/decrypt/v1/receiverAddress",
+            type: "POST",
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            data: JSON.stringify(data),
+            headers: {
+              "x-pdd-pagecode": this.$root.pagecode,
+              "x-pdd-pati": this.$root.pati,
+              shopid: this.$root.shopId,
+            },
+          });
+          const { order_info: nameInfo = {} } = nameResponse || {};
+          const { order_info: addressInfo = {} } = addressResponse || {};
+          const { receiver_name: receiverName = "" } = nameInfo || {};
+          const { receiver_address: receiverAddress = "" } = addressInfo || {};
+          if (receiverName && receiverAddress) {
+            this.onPushOrderJson(
+              receiverName.replace(/\[(.*?)\]/, ""),
+              receiverMobile,
+              receiverAddress.replace(/\[(.*?)\]/, ""),
+              receiverMobileEncrypt,
+              listData,
+              skuList
+            );
+          } else {
+            this.pushLoading = false;
+            this.$message.error("获取明文信息失败");
+          }
+        } catch (error) {
+          console.log(error);
+          const { responseJSON = {} } = error || {};
+          const { msg = "" } = responseJSON || {};
+          this.$message.error(msg);
+          this.pushLoading = false;
+        }
+      }
     },
     // 推送
     onPushOrderJson(name, mobile, address, mobileEncrypt, listData, skuList) {
@@ -1073,7 +1076,7 @@ export default {
         return;
       }
       const { cpCode = "" } = this.logistics[0];
-      const { tid = "", buyerNick = "" } = trades[0] || {};
+      const { tid = "" } = trades[0] || {};
       const { receiverInfo = {} } = listData || {};
       const {
         receiverCity = "",
@@ -1086,7 +1089,7 @@ export default {
           {
             orderId: tid,
             cpCode,
-            buyerNickname: buyerNick ? buyerNick : new Date().getTime(),
+            buyerNickname: new Date().getTime(),
             buyerUid: new Date().getTime(),
             receiver: name,
             phoneNumber: mobile,
@@ -1419,6 +1422,17 @@ export default {
         }
       }, 1000);
     },
+    onGetUrlParams(variable) {
+      var query = window.location.search.substring(1);
+      var vars = query.split("&");
+      for (var i = 0; i < vars.length; i++) {
+        var pair = vars[i].split("=");
+        if (pair[0] == variable) {
+          return pair[1];
+        }
+      }
+      return false;
+    },
   },
   watch: {
     // userInfo(pre, cur) {
@@ -1487,6 +1501,10 @@ export default {
     // },
   },
   mounted() {
+    const isSwitch = this.onGetUrlParams("switch");
+    if (isSwitch) {
+      this.$root.isSwitch = isSwitch;
+    }
     this.onInitProxy();
   },
 };

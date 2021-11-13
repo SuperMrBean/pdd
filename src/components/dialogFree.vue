@@ -609,9 +609,7 @@ export default {
               ? this.order.orderId
               : new Date().getTime(),
             cpCode: this.order.cpCode,
-            buyerNickname: this.order.buyerNickname
-              ? this.order.buyerNickname
-              : new Date().getTime(),
+            buyerNickname: new Date().getTime(),
             buyerUid: this.order.buyerUid
               ? this.order.buyerUid
               : new Date().getTime(),
