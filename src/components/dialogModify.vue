@@ -249,6 +249,15 @@
           <template slot-scope="scope" v-if="scope.row.picUrl">
             <el-popover placement="top-start" trigger="hover">
               <img :src="scope.row.picUrl" style="width:400px;height:400px" />
+              <div style="text-align:center;width:100%;margin-top:10px;">
+                图片名称：{{ scope.row.picName }}
+              </div>
+              <div style="text-align:center;width:100%;margin-top:10px;">
+                类目：{{ scope.row.categoryName }}
+              </div>
+              <div style="text-align:center;width:100%;margin-top:10px;">
+                型号：{{ scope.row.modelName }}
+              </div>
               <div slot="reference">
                 <img :src="scope.row.picUrl" style="width:60px;height:60px" />
               </div>
@@ -531,7 +540,7 @@ export default {
     // 获取省市区数据
     onGetProvinceList() {
       $.ajax({
-        url: "https://yh.prprp.com/api/common/cascadingStreets",
+        url: "https://yh-test.prprp.com/api/common/cascadingStreets",
         type: "GET",
         headers: {
           token: this.$root.token,
@@ -627,6 +636,9 @@ export default {
               skuNum: num,
               errorInfo: "",
               picUrl: "",
+              picName: "",
+              categoryName: "",
+              modelName: "",
             });
           }
         } else {
@@ -635,6 +647,9 @@ export default {
             skuNum: num,
             picUrl: "",
             errorInfo: "",
+            picName: "",
+            categoryName: "",
+            modelName: "",
           });
         }
       });
@@ -645,7 +660,7 @@ export default {
         };
       });
       $.ajax({
-        url: "https://yh.prprp.com/api/product/parsePushSkuList",
+        url: "https://yh-test.prprp.com/api/product/parsePushSkuList",
         type: "POST",
         contentType: "application/json; charset=utf-8",
         dataType: "json",
@@ -673,7 +688,7 @@ export default {
     // 检查skuList
     onCheckSkuList() {
       $.ajax({
-        url: "https://yh.prprp.com/api/product/parsePushSkuList",
+        url: "https://yh-test.prprp.com/api/product/parsePushSkuList",
         type: "POST",
         contentType: "application/json; charset=utf-8",
         dataType: "json",
@@ -733,7 +748,7 @@ export default {
         ],
       };
       $.ajax({
-        url: "https://yh.prprp.com/api/order/json",
+        url: "https://yh-test.prprp.com/api/order/json",
         type: "POST",
         headers: {
           token: this.$root.token,
@@ -831,7 +846,7 @@ export default {
         };
       });
       $.ajax({
-        url: "https://yh.prprp.com/api/callbackRecord/savePushOrder",
+        url: "https://yh-test.prprp.com/api/callbackRecord/savePushOrder",
         type: "POST",
         contentType: "application/json; charset=utf-8",
         headers: {
@@ -1012,7 +1027,7 @@ export default {
         address: this.detailAddress,
       };
       $.ajax({
-        url: "https://yh.prprp.com/api/common/address/parse",
+        url: "https://yh-test.prprp.com/api/common/address/parse",
         type: "GET",
         contentType: "application/json; charset=utf-8",
         dataType: "json",
@@ -1083,6 +1098,9 @@ export default {
         skuNum: 1,
         errorInfo: "",
         picUrl: "",
+        picName: "",
+        categoryName: "",
+        modelName: "",
       });
     },
     onAddSkus() {
@@ -1133,6 +1151,9 @@ export default {
             skuNum: 1,
             errorInfo: "",
             picUrl: "",
+            picName: "",
+            categoryName: "",
+            modelName: "",
           });
         }
         return acc;
@@ -1209,7 +1230,7 @@ export default {
         return;
       }
       $.ajax({
-        url: "https://yh.prprp.com/api/product/parsePushSkuList",
+        url: "https://yh-test.prprp.com/api/product/parsePushSkuList",
         type: "POST",
         contentType: "application/json; charset=utf-8",
         dataType: "json",
@@ -1221,12 +1242,22 @@ export default {
         .then((response) => {
           const { status = null, msg = "", data: skuList = [] } = response;
           if (status === 200) {
-            const { skuCode = "", skuNum = null, errorInfo = "", picUrl = "" } =
-              skuList[0] || {};
+            const {
+              skuCode = "",
+              skuNum = null,
+              errorInfo = "",
+              picUrl = "",
+              picName = "",
+              categoryName = "",
+              modelName = "",
+            } = skuList[0] || {};
             this.orderSkuList[index].skuCode = skuCode;
             this.orderSkuList[index].skuNum = skuNum;
             this.orderSkuList[index].errorInfo = errorInfo;
             this.orderSkuList[index].picUrl = picUrl;
+            this.orderSkuList[index].picName = picName;
+            this.orderSkuList[index].categoryName = categoryName;
+            this.orderSkuList[index].modelName = modelName;
           } else {
             this.$message.error(`sku列表解析失败：${msg}`);
           }
