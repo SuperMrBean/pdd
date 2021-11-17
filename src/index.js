@@ -19,6 +19,7 @@ const vm = new Vue({
       pati: sessionStorage.getItem("pati"),
       templateId: sessionStorage.getItem("templateId"),
       isSwitch: "",
+      operator: localStorage.getItem("operator") || "",
     };
   },
 });

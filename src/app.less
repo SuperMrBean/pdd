@@ -11,11 +11,19 @@
     padding: 20px;
     display: flex;
     align-items: center;
+    justify-content: space-between;
     .item {
       display: flex;
       align-items: center;
       flex-shrink: 0;
       .content {
+        .user {
+          padding: 2px 10px;
+          background: #318adc;
+          color: #fff;
+          border-radius: 4px;
+          cursor: pointer;
+        }
         .type {
           padding: 2px 6px;
           border: 1px solid #999;
@@ -23,9 +31,6 @@
           margin-right: 4px;
         }
       }
-    }
-    .item + .item {
-      margin-left: 40px;
     }
   }
   .table {
@@ -412,4 +417,7 @@
   p {
     color: #606266;
   }
+}
+.el-form-item__label {
+  margin-right: 0;
 }

@@ -7,6 +7,13 @@
           <div class="content">{{ shopInfo.phone }}</div>
         </div>
         <div class="item">
+          <div class="content">
+            <div class="user" @click="onOpenOperator">
+              {{ $root.operator ? $root.operator : "未设置操作人" }}
+            </div>
+          </div>
+        </div>
+        <div class="item">
           <div class="label">绑定店铺：</div>
           <div class="content">
             <span class="type">{{ shopInfo.typeName }}</span>
@@ -31,19 +38,21 @@
             </el-select>
           </div>
         </div>
-        <el-button
-          size="mini"
-          style="margin-left:10px"
-          type="primary"
-          @click="onOpenRecord"
-          >查看回调记录</el-button
-        >
-        <el-button size="mini" type="primary" @click="onOpenHistory"
-          >历史订单查询</el-button
-        >
-        <el-button size="mini" type="primary" @click="onOpenFree"
-          >添加自由订单</el-button
-        >
+        <div class="item">
+          <el-button
+            size="mini"
+            style="margin-left:10px"
+            type="primary"
+            @click="onOpenRecord"
+            >查看回调记录</el-button
+          >
+          <el-button size="mini" type="primary" @click="onOpenHistory"
+            >历史订单查询</el-button
+          >
+          <el-button size="mini" type="primary" @click="onOpenFree"
+            >添加自由订单</el-button
+          >
+        </div>
       </div>
       <div class="table">
         <div class="head">
@@ -482,6 +491,7 @@
       :userInfo="userInfo"
       :pddLogistics="pddLogistics"
     />
+    <dialog-operator :visible.sync="dialogOperator.visible" />
   </div>
 </template>
 <script>
@@ -492,6 +502,7 @@ import dialogModify from "./components/dialogModify.vue";
 import dialogFree from "./components/dialogFree.vue";
 import dialogHistory from "./components/dialogHistory.vue";
 import dialogRecord from "./components/dialogRecord.vue";
+import dialogOperator from "./components/dialogOperator.vue";
 import { proxy } from "ajax-hook";
 import $ from "jquery";
 
@@ -503,6 +514,7 @@ export default {
     dialogFree,
     dialogHistory,
     dialogRecord,
+    dialogOperator,
   },
   data: function() {
     return {
@@ -540,6 +552,9 @@ export default {
         visible: false,
       },
       dialogRecord: {
+        visible: false,
+      },
+      dialogOperator: {
         visible: false,
       },
     };
@@ -1331,6 +1346,9 @@ export default {
     },
     onOpenRecord() {
       this.dialogRecord.visible = true;
+    },
+    onOpenOperator() {
+      this.dialogOperator.visible = true;
     },
     // 点击推送，开始一些列推送请求
     onPush(listData) {
