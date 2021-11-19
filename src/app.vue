@@ -86,7 +86,8 @@
                     >{{ item.buyerNick }}</a
                   >
                 </div>
-                <div class="time">{{ item.minPayTime }}</div>
+                <div class="time">付款时间：{{ item.trades[0].time }}</div>
+                <div class="money">实付金额：￥{{ sum(item.trades) }}</div>
                 <div class="merge" v-if="item.isPacked">
                   有合并订单
                 </div>
@@ -191,7 +192,10 @@
                 }"
                 v-if="tradeIndex > 0"
               >
-                <div class="left">子订单号：{{ tradeItem.tid }}</div>
+                <div class="left">
+                  <div>子订单号：{{ tradeItem.tid }}</div>
+                  <div class="time">付款时间：{{ tradeItem.time }}</div>
+                </div>
                 <div class="right">
                   <el-tooltip
                     class="item"
@@ -266,7 +270,12 @@
                       </div>
                       <div class="right">
                         <div class="title">
-                          {{ orderItem.title }}
+                          <span
+                            class="hover"
+                            @click="onJumpProduct(orderItem.num_iid)"
+                          >
+                            {{ orderItem.title }}</span
+                          >
                           <span
                             class="orderRefund"
                             v-if="
@@ -505,6 +514,7 @@ import dialogRecord from "./components/dialogRecord.vue";
 import dialogOperator from "./components/dialogOperator.vue";
 import { proxy } from "ajax-hook";
 import $ from "jquery";
+import { onGetUrlParams } from "./plugins/utils";
 
 export default {
   components: {
@@ -624,6 +634,7 @@ export default {
                 tid = "",
                 orders = [],
                 status = "",
+                last_ship_time = "",
               } = cur || {};
               const listIndex = acc.findIndex((listItem) => {
                 const { receiverInfo = {} } = listItem || {};
@@ -645,6 +656,7 @@ export default {
                   buyerMessage: buyer_message,
                   sellerMemo: seller_memo,
                   sellerFlag: this.flagObj[tid],
+                  time: last_ship_time,
                   status,
                   orders: orders.map((order) => {
                     const {
@@ -687,6 +699,7 @@ export default {
                   trades: [
                     {
                       tid,
+                      time: last_ship_time,
                       buyerNick: buyer_nick,
                       buyerMessage: buyer_message,
                       sellerMemo: seller_memo,
@@ -738,6 +751,7 @@ export default {
                 orderErrorList: [],
               };
             });
+            console.log(this.list);
           }
           // 拦截列表旗帜信息
           if (url.indexOf("/trade-print/get-seller-flag-by-tids") > -1) {
@@ -808,7 +822,7 @@ export default {
     // 请求店铺信息并做店铺名字校验
     onGetShopInfo(token) {
       $.ajax({
-        url: "https://yh-test.prprp.com/api/user/my_info",
+        url: `https://${this.$root.env}.prprp.com/api/user/my_info`,
         type: "GET",
         headers: {
           token,
@@ -831,7 +845,7 @@ export default {
     // 获取商家余额
     onGetBalance() {
       $.ajax({
-        url: "https://yh-test.prprp.com/api/user/my_account",
+        url: `https://${this.$root.env}.prprp.com/api/user/my_account`,
         type: "GET",
         headers: {
           token: this.$root.token,
@@ -855,7 +869,7 @@ export default {
     // 请求快递列表
     onGetLogistics() {
       $.ajax({
-        url: "https://yh-test.prprp.com/api/common/logistics/all",
+        url: `https://${this.$root.env}.prprp.com/api/common/logistics/all`,
         type: "GET",
         headers: {
           token: this.$root.token,
@@ -976,10 +990,11 @@ export default {
         return {
           skuCode: sku.skuCode,
           skuNum: sku.skuNum,
+          isSpecial: sku.isSpecial ? true : false,
         };
       });
       $.ajax({
-        url: "https://yh-test.prprp.com/api/product/parsePushSkuList",
+        url: `https://${this.$root.env}.prprp.com/api/product/parsePushSkuList`,
         type: "POST",
         contentType: "application/json; charset=utf-8",
         dataType: "json",
@@ -1125,11 +1140,12 @@ export default {
         ],
       };
       $.ajax({
-        url: "https://yh-test.prprp.com/api/order/json",
+        url: `https://${this.$root.env}.prprp.com/api/order/json`,
         type: "POST",
         headers: {
           token: this.$root.token,
           appid: this.shopInfo.appId,
+          operator: encodeURIComponent(this.$root.operator),
         },
         data: { orderJson: JSON.stringify(data) },
       })
@@ -1229,7 +1245,7 @@ export default {
         };
       });
       $.ajax({
-        url: "https://yh-test.prprp.com/api/callbackRecord/savePushOrder",
+        url: `https://${this.$root.env}.prprp.com/api/callbackRecord/savePushOrder`,
         type: "POST",
         contentType: "application/json; charset=utf-8",
         headers: {
@@ -1329,8 +1345,28 @@ export default {
         this.$message.error("请选择推送后操作");
         return;
       }
+      if (!this.$root.refundAddressId) {
+        this.$message.error("请设置退货地址");
+        return;
+      }
+      if (!this.$root.operator) {
+        this.$message.error("请填写操作人");
+        return;
+      }
       if (this.globalTime !== 0) {
         this.$message.error("3秒延迟中，请勿频繁操作");
+        return;
+      }
+      if (!this.userInfo.defaultShopId) {
+        this.$message.error("获取店铺信息失败，请稍后再试");
+        return;
+      }
+      if (this.pddLogistics.length === 0) {
+        this.$message.error("获取追风兔快递列表失败，请稍后再试");
+        return;
+      }
+      if (this.logistics.length === 0) {
+        this.$message.error("获取平台快递列表失败，请稍后再试");
         return;
       }
       this.onLockPush();
@@ -1358,6 +1394,10 @@ export default {
       }
       if (!this.$root.refundAddressId) {
         this.$message.error("请设置退货地址");
+        return;
+      }
+      if (!this.$root.operator) {
+        this.$message.error("请填写操作人");
         return;
       }
       if (this.globalTime !== 0) {
@@ -1451,75 +1491,34 @@ export default {
       }
       return false;
     },
+    onJumpProduct(productId) {
+      window.open(
+        `https://mms.pinduoduo.com/goods/goods_detail?goods_id=${productId}`
+      );
+    },
+    sum(trades) {
+      let arr = [];
+      trades.forEach((trade) => {
+        const { orders = [] } = trade || {};
+        orders.forEach((order) => {
+          const { payment = 0 } = order || {};
+          arr.push(Number(payment));
+        });
+      });
+      return arr.reduce((prev, curr) => {
+        return prev + curr;
+      });
+    },
   },
   watch: {
-    // userInfo(pre, cur) {
-    //   console.log("--", pre);
-    //   console.log("--", cur);
-    //   if (JSON.stringify(pre) !== JSON.stringify(cur)) {
-    //     if (this.$root.token) {
-    //       this.onGetShopInfo(this.$root.token);
-    //     }
-    //   }
-    // },
     show(value) {
       if (value) {
         this.onInit();
       }
     },
-    // list(value) {
-    //   console.log("list");
-    //   console.log(value);
-    //   console.log(this.flagList);
-    //   if (value.length > 0 && this.flagList > 0) {
-    //     const flagObj = flagInfo.reduce((acc, cur) => {
-    //       const { tid = "", sellerFlag = "" } = cur || {};
-    //       acc[tid] = sellerFlag;
-    //       return acc;
-    //     }, {});
-    //     this.list = this.list.map((item) => {
-    //       const { trades = [] } = item || {};
-    //       return {
-    //         ...item,
-    //         trades: trades.map((trade) => {
-    //           const { tid = "" } = trade || {};
-    //           return {
-    //             ...trade,
-    //             sellerFlag: flagObj[tid],
-    //           };
-    //         }),
-    //       };
-    //     });
-    //   }
-    // },
-    // flagList(value) {
-    //   console.log("flagList");
-    //   console.log(value);
-    //   console.log(this.list);
-    //   if (value.length > 0 && this.list > 0) {
-    //     const flagObj = flagInfo.reduce((acc, cur) => {
-    //       const { tid = "", sellerFlag = "" } = cur || {};
-    //       acc[tid] = sellerFlag;
-    //       return acc;
-    //     }, {});
-    //     this.list = this.list.map((item) => {
-    //       const { trades = [] } = item || {};
-    //       return {
-    //         ...item,
-    //         trades: trades.map((trade) => {
-    //           const { tid = "" } = trade || {};
-    //           return {
-    //             ...trade,
-    //             sellerFlag: flagObj[tid],
-    //           };
-    //         }),
-    //       };
-    //     });
-    //   }
-    // },
   },
   mounted() {
-    const isSwitch = this.onGetUrlParams("switch");
+    const isSwitch = onGetUrlParams("switch");
     if (isSwitch) {
       this.$root.isSwitch = isSwitch;
     }

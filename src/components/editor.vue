@@ -6,11 +6,17 @@
 <script>
 import E from "./wangEditor/src/js/index";
 import Axios from "../plugins/http";
+import { onGetUrlParams } from "../plugins/utils";
+
 export default {
   props: {
     apiUrl: {
       type: String,
-      default: "https://yh-test.prprp.com/api/upload/oss",
+      default: `https://${
+        onGetUrlParams("env") && onGetUrlParams("env") === "test"
+          ? "yh-test"
+          : "yh"
+      }.prprp.com/api/upload/oss`,
     },
   },
   data: function() {

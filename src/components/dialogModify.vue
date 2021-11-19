@@ -267,6 +267,7 @@
         <el-table-column prop="skuCode" label="商家编码">
           <template slot-scope="scope">
             <el-input
+              :class="scope.row.isSpecial ? 'special' : null"
               v-model="scope.row.skuCode"
               size="mini"
               placeholder="商家编码"
@@ -313,6 +314,9 @@
       <div class="footer-btn">
         <el-button size="mini" type="primary" @click="onAddOrder"
           >添加子订单</el-button
+        >
+        <el-button size="mini" type="warning" @click="onAddSpecialOrder"
+          >添加特殊子订单</el-button
         >
         <el-button size="mini" type="success" @click="onAddSkus"
           >快速添加</el-button
@@ -540,7 +544,7 @@ export default {
     // 获取省市区数据
     onGetProvinceList() {
       $.ajax({
-        url: "https://yh-test.prprp.com/api/common/cascadingStreets",
+        url: `https://${this.$root.env}.prprp.com/api/common/cascadingStreets`,
         type: "GET",
         headers: {
           token: this.$root.token,
@@ -657,10 +661,11 @@ export default {
         return {
           skuCode: sku.skuCode,
           skuNum: sku.skuNum,
+          isSpecial: sku.isSpecial ? true : false,
         };
       });
       $.ajax({
-        url: "https://yh-test.prprp.com/api/product/parsePushSkuList",
+        url: `https://${this.$root.env}.prprp.com/api/product/parsePushSkuList`,
         type: "POST",
         contentType: "application/json; charset=utf-8",
         dataType: "json",
@@ -688,7 +693,7 @@ export default {
     // 检查skuList
     onCheckSkuList() {
       $.ajax({
-        url: "https://yh-test.prprp.com/api/product/parsePushSkuList",
+        url: `https://${this.$root.env}.prprp.com/api/product/parsePushSkuList`,
         type: "POST",
         contentType: "application/json; charset=utf-8",
         dataType: "json",
@@ -697,7 +702,11 @@ export default {
         },
         data: JSON.stringify(
           this.orderSkuList.map((item) => {
-            return { skuCode: item.skuCode, skuNum: item.skuNum };
+            return {
+              skuCode: item.skuCode,
+              skuNum: item.skuNum,
+              isSpecial: item.isSpecial ? true : false,
+            };
           })
         ),
       })
@@ -748,11 +757,12 @@ export default {
         ],
       };
       $.ajax({
-        url: "https://yh-test.prprp.com/api/order/json",
+        url: `https://${this.$root.env}.prprp.com/api/order/json`,
         type: "POST",
         headers: {
           token: this.$root.token,
           appid: this.shopInfo.appId,
+          operator: encodeURIComponent(this.$root.operator),
         },
         data: { orderJson: JSON.stringify(data) },
       })
@@ -761,9 +771,20 @@ export default {
           const { error = [], ok = [], balance = null } = data || {};
           if (status === 200) {
             if (error.length > 0) {
-              const { orderError = [] } = error[0];
+              const { orderError = [], skuError = [] } = error[0];
               if (orderError.length > 0) {
                 this.error.orderError = orderError;
+              }
+              if (skuError.length > 0) {
+                skuError.forEach((error) => {
+                  const { errorSku = "", errorText = "" } = error || {};
+                  this.orderSkuList.forEach((sku) => {
+                    const { skuCode = "" } = sku || {};
+                    if (errorSku === skuCode) {
+                      sku.errorInfo = errorText;
+                    }
+                  });
+                });
               }
               this.loading = false;
               this.$message.error("推送失败");
@@ -846,7 +867,7 @@ export default {
         };
       });
       $.ajax({
-        url: "https://yh-test.prprp.com/api/callbackRecord/savePushOrder",
+        url: `https://${this.$root.env}.prprp.com/api/callbackRecord/savePushOrder`,
         type: "POST",
         contentType: "application/json; charset=utf-8",
         headers: {
@@ -1027,7 +1048,7 @@ export default {
         address: this.detailAddress,
       };
       $.ajax({
-        url: "https://yh-test.prprp.com/api/common/address/parse",
+        url: `https://${this.$root.env}.prprp.com/api/common/address/parse`,
         type: "GET",
         contentType: "application/json; charset=utf-8",
         dataType: "json",
@@ -1042,17 +1063,20 @@ export default {
         let citys = this.province.filter((item) => {
           return item.value == addressDTO.provId;
         });
-
+        console.log(citys);
         this.cityList = citys[0].children;
         let districts = this.cityList.filter((item) => {
           return item.value == addressDTO.cityId;
         });
+        console.log(districts);
         this.districtList = districts[0].children;
         let streets = this.districtList.filter((item) => {
+          console.log(item.value);
+          console.log(addressDTO.areaId);
           return item.value == addressDTO.areaId;
         });
+        console.log(streets);
         this.streetList = streets[0].children;
-
         this.order.province = `${addressDTO.provName}`;
         this.order.city = `${addressDTO.cityName}`;
         this.order.district = `${addressDTO.areaName}`;
@@ -1101,6 +1125,18 @@ export default {
         picName: "",
         categoryName: "",
         modelName: "",
+      });
+    },
+    onAddSpecialOrder() {
+      this.orderSkuList.push({
+        skuCode: null,
+        skuNum: 1,
+        errorInfo: "",
+        picUrl: "",
+        picName: "",
+        categoryName: "",
+        modelName: "",
+        isSpecial: true,
       });
     },
     onAddSkus() {
@@ -1230,14 +1266,20 @@ export default {
         return;
       }
       $.ajax({
-        url: "https://yh-test.prprp.com/api/product/parsePushSkuList",
+        url: `https://${this.$root.env}.prprp.com/api/product/parsePushSkuList`,
         type: "POST",
         contentType: "application/json; charset=utf-8",
         dataType: "json",
         headers: {
           token: this.$root.token,
         },
-        data: JSON.stringify([{ skuCode: item.skuCode, skuNum: item.skuNum }]),
+        data: JSON.stringify([
+          {
+            skuCode: item.skuCode,
+            skuNum: item.skuNum,
+            isSpecial: item.isSpecial ? true : false,
+          },
+        ]),
       })
         .then((response) => {
           const { status = null, msg = "", data: skuList = [] } = response;

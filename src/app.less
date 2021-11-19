@@ -66,7 +66,6 @@
               width: 300px;
             }
             .ali {
-              width: 200px;
               color: #318adc;
               cursor: pointer;
               display: flex;
@@ -81,7 +80,10 @@
               }
             }
             .time {
-              width: 200px;
+              margin-left: 20px;
+            }
+            .money {
+              margin-left: 20px;
             }
             .merge {
               width: 90px;
@@ -189,6 +191,9 @@
             .left {
               display: flex;
               align-items: center;
+              .time {
+                margin-left: 20px;
+              }
             }
             .right {
               display: flex;
@@ -268,6 +273,9 @@
                 justify-content: space-between;
                 .title {
                   color: #3e3e3e;
+                  .hover {
+                    cursor: pointer;
+                  }
                 }
                 .orderRefund {
                   display: inline-block;
@@ -298,6 +306,7 @@
             padding: 0 24px;
           }
           .address {
+            margin-top: 20px;
             padding: 0 24px;
           }
           .operation {
@@ -420,4 +429,7 @@
 }
 .el-form-item__label {
   margin-right: 0;
+}
+.special .el-input__inner {
+  background: #dfefff !important;
 }

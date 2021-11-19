@@ -77,3 +77,6 @@ npm run build
 如果想了解更多内容，请访问下面的网址：
 [油猴脚手架 wokoo 使用说明](https://juejin.cn/post/6922815205575491597)
 [油猴脚手架 wokoo git 仓库](https://github.com/kinyaying/wokoo)
+
+switch=true 会直接传带星号的，不然默认是开启解密的
+env=test 测试环境
