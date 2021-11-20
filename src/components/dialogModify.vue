@@ -114,6 +114,19 @@
                 filterable
                 placeholder="省份"
                 size="mini"
+              >
+                <el-option
+                  v-for="item in province"
+                  :key="item.text"
+                  :label="item.text"
+                  :value="item.text"
+                ></el-option>
+              </el-select>
+              <!-- <el-select
+                v-model="order.province"
+                filterable
+                placeholder="省份"
+                size="mini"
                 @change="
                   (val) => {
                     onChangeValue(val, 'province');
@@ -126,12 +139,17 @@
                   :label="item.text"
                   :value="item.text"
                 ></el-option>
-              </el-select>
+              </el-select> -->
             </el-form-item>
           </el-col>
           <el-col :span="8">
             <el-form-item label="城市" label-width="70px" required prop="city">
-              <el-select
+              <el-input
+                placeholder="城市"
+                size="mini"
+                v-model="order.city"
+              ></el-input>
+              <!-- <el-select
                 v-model="order.city"
                 filterable
                 placeholder="城市"
@@ -148,7 +166,7 @@
                   :label="item.text"
                   :value="item.text"
                 ></el-option>
-              </el-select>
+              </el-select> -->
             </el-form-item>
           </el-col>
           <el-col :span="8">
@@ -158,7 +176,12 @@
               required
               prop="district"
             >
-              <el-select
+              <el-input
+                placeholder="行政区"
+                size="mini"
+                v-model="order.district"
+              ></el-input>
+              <!-- <el-select
                 v-model="order.district"
                 filterable
                 placeholder="行政区"
@@ -175,19 +198,24 @@
                   :label="item.text"
                   :value="item.text"
                 ></el-option>
-              </el-select>
+              </el-select> -->
             </el-form-item>
           </el-col>
         </el-row>
         <el-row :span="24">
-          <el-col :span="10">
+          <el-col :span="8">
             <el-form-item
               label="街道/乡镇"
               prop="street"
               label-width="90px"
               required
             >
-              <el-select
+              <el-input
+                placeholder="街道/乡镇"
+                size="mini"
+                v-model="order.street"
+              ></el-input>
+              <!-- <el-select
                 v-model="order.street"
                 filterable
                 placeholder="街道/乡镇"
@@ -204,10 +232,10 @@
                   :label="item.text"
                   :value="item.text"
                 ></el-option>
-              </el-select>
+              </el-select> -->
             </el-form-item>
           </el-col>
-          <el-col :span="14">
+          <el-col :span="16">
             <el-form-item label="详细地址" required prop="address">
               <el-input
                 placeholder="详细地址"
@@ -390,9 +418,9 @@ export default {
     return {
       loading: false,
       province: [],
-      cityList: [],
-      districtList: [],
-      streetList: [],
+      // cityList: [],
+      // districtList: [],
+      // streetList: [],
       order: {
         orderId: "",
         cpCode: "",
@@ -553,18 +581,18 @@ export default {
         .then((response) => {
           const { data = [] } = response || {};
           this.province = data;
-          let citys = this.province.filter((item) => {
-            return item.text == this.order.province;
-          });
-          this.cityList = citys[0].children;
-          let districts = this.cityList.filter((item) => {
-            return item.text == this.order.city;
-          });
-          this.districtList = districts[0].children;
-          let streets = this.districtList.filter((item) => {
-            return item.text == this.order.district;
-          });
-          this.streetList = streets[0].children;
+          // let citys = this.province.filter((item) => {
+          //   return item.text == this.order.province;
+          // });
+          // this.cityList = citys[0].children;
+          // let districts = this.cityList.filter((item) => {
+          //   return item.text == this.order.city;
+          // });
+          // this.districtList = districts[0].children;
+          // let streets = this.districtList.filter((item) => {
+          //   return item.text == this.order.district;
+          // });
+          // this.streetList = streets[0].children;
         })
         .catch((error) => {
           const { responseJSON = {} } = error || {};
@@ -1060,23 +1088,20 @@ export default {
         },
       }).then((res) => {
         let { addressDTO, personDTO } = res.data;
-        let citys = this.province.filter((item) => {
-          return item.value == addressDTO.provId;
-        });
-        console.log(citys);
-        this.cityList = citys[0].children;
-        let districts = this.cityList.filter((item) => {
-          return item.value == addressDTO.cityId;
-        });
-        console.log(districts);
-        this.districtList = districts[0].children;
-        let streets = this.districtList.filter((item) => {
-          console.log(item.value);
-          console.log(addressDTO.areaId);
-          return item.value == addressDTO.areaId;
-        });
-        console.log(streets);
-        this.streetList = streets[0].children;
+        // let citys = this.province.filter((item) => {
+        //   return item.value == addressDTO.provId;
+        // });
+        // this.cityList = citys[0].children;
+        // let districts = this.cityList.filter((item) => {
+        //   return item.value == addressDTO.cityId;
+        // });
+        // this.districtList = districts[0].children;
+        // let streets = this.districtList.filter((item) => {
+        //   console.log(item.value);
+        //   console.log(addressDTO.areaId);
+        //   return item.value == addressDTO.areaId;
+        // });
+        // this.streetList = streets[0].children;
         this.order.province = `${addressDTO.provName}`;
         this.order.city = `${addressDTO.cityName}`;
         this.order.district = `${addressDTO.areaName}`;
@@ -1087,35 +1112,35 @@ export default {
         this.detailAddress = "";
       });
     },
-    onChangeValue(val, key) {
-      if (key === "province") {
-        let citys = this.province.filter((item) => {
-          return item.text == val;
-        });
-        this.cityList = citys[0].children;
-        this.districtList = [];
-        this.streetList = [];
-        this.order.city = "";
-        this.order.district = "";
-        this.order.street = "";
-      }
-      if (key === "city") {
-        let districts = this.cityList.filter((item) => {
-          return item.text == val;
-        });
-        this.districtList = districts[0].children;
-        this.streetList = [];
-        this.order.district = "";
-        this.order.street = "";
-      }
-      if (key === "district") {
-        let streets = this.districtList.filter((item) => {
-          return item.text == val;
-        });
-        this.streetList = streets[0].children;
-        this.order.street = "";
-      }
-    },
+    // onChangeValue(val, key) {
+    //   if (key === "province") {
+    //     let citys = this.province.filter((item) => {
+    //       return item.text == val;
+    //     });
+    //     this.cityList = citys[0].children;
+    //     this.districtList = [];
+    //     this.streetList = [];
+    //     this.order.city = "";
+    //     this.order.district = "";
+    //     this.order.street = "";
+    //   }
+    //   if (key === "city") {
+    //     let districts = this.cityList.filter((item) => {
+    //       return item.text == val;
+    //     });
+    //     this.districtList = districts[0].children;
+    //     this.streetList = [];
+    //     this.order.district = "";
+    //     this.order.street = "";
+    //   }
+    //   if (key === "district") {
+    //     let streets = this.districtList.filter((item) => {
+    //       return item.text == val;
+    //     });
+    //     this.streetList = streets[0].children;
+    //     this.order.street = "";
+    //   }
+    // },
     onAddOrder() {
       this.orderSkuList.push({
         skuCode: null,
