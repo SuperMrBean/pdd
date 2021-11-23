@@ -328,9 +328,12 @@
                           `${item.receiverInfo.receiverCountry || ""} ${item
                             .receiverInfo.receiverState || ""} ${item
                             .receiverInfo.receiverCity || ""} ${item
-                            .receiverInfo.receiverTown || ""} ${item
-                            .receiverInfo.receiverDistrict || ""} ${item
-                            .receiverInfo.receiverAddress || ""}`
+                            .receiverInfo.receiverTown || ""} ${
+                            item.receiverInfo.receiverDistrict ===
+                            item.receiverInfo.receiverTown
+                              ? ""
+                              : item.receiverInfo.receiverDistrict
+                          } ${item.receiverInfo.receiverAddress || ""}`
                         }}
                       </div>
                     </div>

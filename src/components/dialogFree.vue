@@ -116,6 +116,19 @@
                 filterable
                 placeholder="省份"
                 size="mini"
+              >
+                <el-option
+                  v-for="item in province"
+                  :key="item.text"
+                  :label="item.text"
+                  :value="item.text"
+                ></el-option>
+              </el-select>
+              <!-- <el-select
+                v-model="order.province"
+                filterable
+                placeholder="省份"
+                size="mini"
                 @change="
                   (val) => {
                     onChangeValue(val, 'province');
@@ -128,7 +141,7 @@
                   :label="item.text"
                   :value="item.text"
                 ></el-option>
-              </el-select>
+              </el-select> -->
             </el-form-item>
           </el-col>
           <el-col :span="8">
@@ -192,7 +205,7 @@
           </el-col>
         </el-row>
         <el-row :span="24">
-          <el-col :span="10">
+          <el-col :span="8">
             <el-form-item
               label="街道/乡镇"
               prop="street"
@@ -224,7 +237,7 @@
               </el-select> -->
             </el-form-item>
           </el-col>
-          <el-col :span="14">
+          <el-col :span="16">
             <el-form-item label="详细地址" required prop="address">
               <el-input
                 placeholder="详细地址"
@@ -680,7 +693,7 @@ export default {
           const { error = [], ok = [], balance = null } = data || {};
           if (status === 200) {
             if (error.length > 0) {
-              const { orderError = [], skuError } = error[0];
+              const { orderError = [], skuError = [] } = error[0];
               if (orderError.length > 0) {
                 this.error.orderError = orderError;
               }
